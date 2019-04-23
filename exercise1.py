@@ -5,8 +5,12 @@ from RLS import rls
 
 def oneMax(bitstring):
     return sum(bitstring)
+
 def leadingOnes(bitstring):
-    return sum(bitstring.split('0')[0])
+    if 0 not in bitstring:
+        return sum(bitstring)
+    return sum(bitstring[0:bitstring.index(0)])
+
 def jump(k, bitstring):
     return 0
 def binVal(bitstring):
@@ -28,5 +32,5 @@ def opoea(func, n):
 
 
 #print(opoea(oneMax, 4))
-n = 10
-print(rls(initial_x=[0]*n, n=n,stop_criterion=n, func=oneMax))
+n = 25
+print(rls(initial_x=[0]*n, n=n,stop_criterion=n, func=leadingOnes))

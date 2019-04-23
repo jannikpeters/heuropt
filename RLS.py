@@ -12,4 +12,5 @@ def rls(*, stop_criterion, initial_x: List, n: int, func):
         y[i] = 1 - y[i]
         if func(y) >= func(x):
             x = y.copy()
+        print(iterations,x)
     return iterations
