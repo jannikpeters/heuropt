@@ -1,5 +1,6 @@
 from random import *
 import numpy as np
+from RLS import rls
 def oneMax(bitstring):
     return sum(bitstring)
 def leadingOnes(bitstring):
@@ -35,3 +36,5 @@ n = 25
 while True:
     print(n, opoea(oneMax, n))
     n+= 25
+n = 10
+print(rls(initial_x=[0]*n, n=n,stop_criterion=n, func=oneMax))
