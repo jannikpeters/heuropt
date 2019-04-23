@@ -1,4 +1,8 @@
 from random import *
+
+from RLS import rls
+
+
 def oneMax(bitstring):
     return sum(bitstring)
 def leadingOnes(bitstring):
@@ -17,10 +21,12 @@ def opoea(func, n):
     val = func(x)
     while(x < n):
         y = x
-        for(i in range(n)):
+        for i in range(n):
             if(random.random() <= 1/n):
                 y[i] = 1- y[i]
 
 
 
-print(opoea(oneMax, 4))
+#print(opoea(oneMax, 4))
+n = 10
+print(rls(initial_x=[0]*n, n=n,stop_criterion=n, func=oneMax))
