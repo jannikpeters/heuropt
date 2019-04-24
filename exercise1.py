@@ -23,11 +23,28 @@ def jump(k, bitstring):
     return sum
 
 
-def binVal(bitstring):
-    raise NotImplementedError
+def binVal(bitstring: np.ndarray):
+    """ Convert binary string to real valued number"""
+    s = 0
+    for i, val in enumerate(reversed(bitstring)):
+        s += (2 ** i) * val
+    return s
 
 
-def royalRoads(k, bitstring):
+def royalRoads(k, bitstring: np.ndarray):
+    """ Number of groups made up of only ones, where groups are created by intersecting at consecutive values. """
+    assert bitstring.shape[0] % k == 0, "N should be divisible by k by definition."
+    royal_roads = 0
+    for group in range(n/k):
+        royal = True
+        for val in bitstring[group*k:group*(k+1)]:
+            if val == 0:
+                royal = False
+                break
+
+        if royal:
+            royal_roads += 1
+
     raise NotImplementedError
 
 
