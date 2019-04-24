@@ -1,11 +1,14 @@
 import operator
 from random import *
 import numpy as np
+import pandas as pd
 import signal
 from itertools import product
 from RLS import rls
 from oneplusoneea import *
 import operator
+import matplotlib.pyplot as plt
+
 
 
 def oneMax(bitstring: np.ndarray):
@@ -105,6 +108,15 @@ def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,
         if time_outs == repetitions:
             break
 
+    return results
+
+
+def plot(results):
+    df = pd.DataFrame(results)
+    df.plot(kind='scatter',x = 'n', y='avg_run_time',
+            title=results[0]['algorithm_name']+results[0]['test_fun'])
+    plt.show()
+
 
 if __name__ == '__main__':
     operators = [operator.gt, operator.ge]
@@ -117,4 +129,6 @@ if __name__ == '__main__':
     waiting_sec = 1
 
     for algo, test_fun, op in product(algorithms, test_functions, operators):
-        run_tests(test_fun, algo, op,waiting_secs=waiting_sec)
+        results =run_tests(test_fun, algo, op,waiting_secs=waiting_sec)
+        plot(results)
+
