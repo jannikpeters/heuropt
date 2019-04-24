@@ -114,7 +114,7 @@ def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,
 def plot(results):
     df = pd.DataFrame(results)
     df.plot(kind='scatter',x = 'n', y='avg_run_time',
-            title=results[0]['algorithm_name']+results[0]['test_fun'])
+            title=results[0]['algorithm_name']+results[0]['test_fun']+results[0]['comparison_operator'])
     plt.show()
 
 
