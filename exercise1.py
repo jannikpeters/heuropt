@@ -1,3 +1,4 @@
+import operator
 from random import *
 import numpy as np
 from RLS import rls
@@ -53,5 +54,5 @@ n = 25
 while True:
     randList = np.random.randint(2, size=n)
     print(opoea(initial_x = randList, n=n, stop_criterion=n, func=oneMax, lamb = 1, better_comp = operator.gt ))
-    print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes))
+    print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes, better_comp=operator.gt))
     n += 25

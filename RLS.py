@@ -10,6 +10,6 @@ def rls(*, stop_criterion, initial_x: np.ndarray, n: int, func, better_comp):
         y = x.copy()
         i = randint(0, n-1)
         y[i] = 1 - y[i]
-        if better_comp(y,x):
+        if better_comp(func(y),func(x)):
             x = y.copy()
     return iterations
