@@ -2,7 +2,7 @@ import operator
 from random import *
 import numpy as np
 from RLS import rls
-from oneplusoneea import opoea
+from oneplusoneea import *
 import operator
 
 def oneMax(bitstring: np.ndarray):
@@ -63,3 +63,4 @@ if __name__ == '__main__':
     operators = [operator.gt, operator.ge]
     k = 3
     test_functions = [oneMax, lambda b: jump(k,b), leadingOnes, binVal, lambda b: royalRoads(k,b)]
+    algorithms = [rls] + opoea_func
