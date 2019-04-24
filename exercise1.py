@@ -31,8 +31,8 @@ def binVal(bitstring: np.ndarray):
     """ Convert binary string to real valued number"""
     s = ''
     for val in bitstring:
-        s += str(val)
-    return int(s,'2')
+        s += str(int(val))
+    return int(s,2)
 
 
 def royalRoads(k, bitstring: np.ndarray):
@@ -54,7 +54,7 @@ def royalRoads(k, bitstring: np.ndarray):
 
 
 def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,waiting_secs=1):
-    algo_name = str(run_algorithm.func.__name__)  + ','.join(algo.keywords.values())
+    algo_name = str(run_algorithm.func.__name__)  + ','.join([str(k) for k in algo.keywords.values()])
     print('Running %s,%s,%s' % (compare_op.__name__,  test_func.__name__, algo_name))
     n = stepsize
     results = []
@@ -73,7 +73,7 @@ def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,
             try:
                 if test_func.__name__ == 'binVal':
                     rt = run_algorithm(initial_x=randList,
-                                       n=n, stop_criterion=2**n,
+                                       n=n, stop_criterion=(2**n)-1,
                                        func=test_func,
                                        better_comp=compare_op)
                 else:
