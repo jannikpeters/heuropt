@@ -16,6 +16,11 @@ def leadingOnes(bitstring):
 
 def jump(k, bitstring):
     sum = sum(bitstring)
+    if sum < len(bitstring) - k:
+        return sum
+    if sum < len(bitstring):
+        return len(bitstring) - k
+    return sum
 
 
 def binVal(bitstring):
@@ -29,7 +34,7 @@ def royalRoads(k, bitstring):
 
 n = 25
 while True:
-    randList =  [randint(0, 1) for _ in range(n)]
-    print(opoea(lambda = 1, initial_x = randList, n=n, stop_criterion=n, func=leadingOnes ))
+    randList = [randint(0, 1) for _ in range(n)]
+    print(opoea(lamb = 1, initial_x = randList, n=n, stop_criterion=n, func=leadingOnes ))
     print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes))
     n += 25
