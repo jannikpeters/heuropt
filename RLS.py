@@ -12,4 +12,4 @@ def rls(*, stop_criterion, initial_x: np.ndarray, n: int, func, better_comp):
         y[i] = 1 - y[i]
         if better_comp(func(y),func(x)):
             x = y.copy()
-    return iterations
+    return iterations, 'RLS'
