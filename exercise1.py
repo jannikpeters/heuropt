@@ -4,14 +4,14 @@ from RLS import rls
 from oneplusoneea import opoea
 
 
-def oneMax(bitstring):
-    return sum(bitstring)
+def oneMax(bitstring: np.ndarray):
+    return bitstring.sum()
 
 
-def leadingOnes(bitstring):
+def leadingOnes(bitstring: np.ndarray):
     if 0 not in bitstring:
-        return sum(bitstring)
-    return sum(bitstring[0:bitstring.index(0)])
+        return bitstring.sum()
+    return bitstring[0:np.where(bitstring==0)[0][0]].sum()
 
 
 def jump(k, bitstring):
@@ -51,7 +51,7 @@ def royalRoads(k, bitstring: np.ndarray):
 
 n = 25
 while True:
-    randList = [randint(0, 1) for _ in range(n)]
+    randList = np.random.randint(2, size=n)
     print(opoea(initial_x = randList, n=n, stop_criterion=n, func=oneMax, lamb = 1, better_comp = operator.gt ))
-    #print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes, better_comp = operator.gt))
+    print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes))
     n += 25
