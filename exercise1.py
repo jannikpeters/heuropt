@@ -49,7 +49,7 @@ def royalRoads(k, bitstring: np.ndarray):
     return royal_roads
 
 
-def run_tests(test_func,algorithm, stepsize = 25, compare_op):
+def run_tests(test_func,algorithm, compare_op, stepsize = 25):
     n = stepsize
     while True:
         print("Length", n)
