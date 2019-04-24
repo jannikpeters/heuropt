@@ -1,7 +1,7 @@
 from random import randint
 from typing import List
 import numpy as np
-def opoea(*, lamb, stop_criterion, initial_x: List, n: int, func):
+def opoea(*,stop_criterion, initial_x: List, n: int, func, lamb, better_comp):
     count = 0
     x = initial_x
     orig_x = x.copy()
@@ -13,8 +13,8 @@ def opoea(*, lamb, stop_criterion, initial_x: List, n: int, func):
             y = orig_x.copy()
             changes = np.random.binomial(n=n, p=(1 / n))
             changeVals = np.random.choice(n, changes)
-            for i in changeVals:
-                y[i] = 1 - y[i]
-            if func(y) > func(x):
+            for j in changeVals:
+                y[j] = 1 - y[j]
+            if better_comp(func(y),func(x)):
                 x = y.copy()
     return count

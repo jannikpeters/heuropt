@@ -45,13 +45,13 @@ def royalRoads(k, bitstring: np.ndarray):
         if royal:
             royal_roads += 1
 
-    raise NotImplementedError
+    return royal_roads
 
 
 
 n = 25
 while True:
     randList = [randint(0, 1) for _ in range(n)]
-    print(opoea(lamb = 1, initial_x = randList, n=n, stop_criterion=n, func=leadingOnes ))
-    print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes))
+    print(opoea(initial_x = randList, n=n, stop_criterion=n, func=oneMax, lamb = 1, better_comp = operator.gt ))
+    #print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes, better_comp = operator.gt))
     n += 25
