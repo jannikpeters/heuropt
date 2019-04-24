@@ -29,17 +29,18 @@ def jump(k, bitstring):
 
 def binVal(bitstring: np.ndarray):
     """ Convert binary string to real valued number"""
-    s = 0
-    for i, val in enumerate(reversed(bitstring)):
-        s += (2 ** i) * val
-    return s
+    s = ''
+    for val in bitstring:
+        s += str(val)
+    return int(s,'2')
 
 
 def royalRoads(k, bitstring: np.ndarray):
     """ Number of groups made up of only ones, where groups are created by intersecting at consecutive values. """
     assert bitstring.shape[0] % k == 0, "N should be divisible by k by definition."
     royal_roads = 0
-    for group in range(n / k):
+    n = len(bitstring)
+    for group in range(int(n / k)):
         royal = True
         for val in bitstring[group * k:group * (k + 1)]:
             if val == 0:
@@ -70,14 +71,20 @@ def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,
             signal.signal(signal.SIGALRM, signal_handler)
             signal.alarm(waiting_secs)
             try:
-                rt = run_algorithm(initial_x=randList,
-                                              n=n, stop_criterion=n,
-                                              func=test_func,
-                                              better_comp=compare_op)
+                if test_func.__name__ == 'binVal':
+                    rt = run_algorithm(initial_x=randList,
+                                       n=n, stop_criterion=2**n,
+                                       func=test_func,
+                                       better_comp=compare_op)
+                else:
+                    rt = run_algorithm(initial_x=randList,
+                                                  n=n, stop_criterion=n,
+                                                  func=test_func,
+                                                  better_comp=compare_op)
                 run_times.append(rt)
             except TimeoutError:
                 time_outs += 1
-
+        signal.alarm(0)
         if time_outs != repetitions:
             avg_run_time = sum(run_times) / (repetitions - time_outs)
         else:
@@ -95,15 +102,19 @@ def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,
         results.append(res)
         print(res)
         n += stepsize
+        if time_outs == repetitions:
+            break
 
 
 if __name__ == '__main__':
     operators = [operator.gt, operator.ge]
     k = 3
-    test_functions = [oneMax, lambda b: jump(k, b), leadingOnes, binVal, lambda b: royalRoads(k, b)]
+    r = 5
+    test_functions = [oneMax, lambda b: jump(k, b), leadingOnes, binVal, lambda b: royalRoads(r, b)]
     test_functions[1].__name__ = 'jump(%s)' % k
-    test_functions[4].__name__ = 'royal_roads(%s)' % k
+    test_functions[4].__name__ = 'royal_roads(%s)' % r
     algorithms = [rls] + opoea_func
+    waiting_sec = 1
 
     for algo, test_fun, op in product(algorithms, test_functions, operators):
-        run_tests(test_fun, algo, op)
+        run_tests(test_fun, algo, op,waiting_secs=waiting_sec)
