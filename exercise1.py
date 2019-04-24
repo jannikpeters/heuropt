@@ -1,6 +1,7 @@
 import operator
 from random import *
 import numpy as np
+import signal
 from itertools import product
 from RLS import rls
 from oneplusoneea import *
@@ -51,30 +52,48 @@ def royalRoads(k, bitstring: np.ndarray):
     return royal_roads * k
 
 
-def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repititions=10):
+def run_tests(test_func, run_algorithm, compare_op, stepsize=25, repetitions=10,waiting_secs=1):
+    algo_name = str(run_algorithm.func.__name__)  + ','.join(algo.keywords.values())
+    print('Running %s,%s,%s' % (compare_op.__name__,  test_func.__name__, algo_name))
     n = stepsize
     results = []
     while n < 100:
         # print("Length", n)
         run_times = []
-        for i in range(repititions):
+        time_outs = 0
+        for i in range(repetitions):
             randList = np.random.randint(2, size=n)
 
-            rt, algo_name = run_algorithm(initial_x=randList,
-                                          n=n, stop_criterion=n,
-                                          func=test_func,
-                                          better_comp=compare_op)
-            run_times.append(rt)
+            def signal_handler(signum, frame):
+                raise TimeoutError()
 
-        avg_run_time = sum(run_times) / repititions
-        results.append(
-            {
+            signal.signal(signal.SIGALRM, signal_handler)
+            signal.alarm(waiting_secs)
+            try:
+                rt = run_algorithm(initial_x=randList,
+                                              n=n, stop_criterion=n,
+                                              func=test_func,
+                                              better_comp=compare_op)
+                run_times.append(rt)
+            except TimeoutError:
+                time_outs += 1
+
+        if time_outs != repetitions:
+            avg_run_time = sum(run_times) / (repetitions - time_outs)
+        else:
+            avg_run_time = np.inf
+
+        res = {
                 'avg_run_time': avg_run_time,
                 'n': n,
-                'algorithm_name': algo_name
+                'timeouts': time_outs,
+                'algorithm_name': algo_name,
+                'comparison_operator': compare_op.__name__,
+                'test_fun': test_func.__name__,
+                'repetitions': repetitions
             }
-        )
-        print(results)
+        results.append(res)
+        print(res)
         n += stepsize
 
 
@@ -82,6 +101,8 @@ if __name__ == '__main__':
     operators = [operator.gt, operator.ge]
     k = 3
     test_functions = [oneMax, lambda b: jump(k, b), leadingOnes, binVal, lambda b: royalRoads(k, b)]
+    test_functions[1].__name__ = 'jump(%s)' % k
+    test_functions[4].__name__ = 'royal_roads(%s)' % k
     algorithms = [rls] + opoea_func
 
     for algo, test_fun, op in product(algorithms, test_functions, operators):
