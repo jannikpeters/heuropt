@@ -4,15 +4,14 @@ from RLS import rls
 from oneplusoneea import opoea
 import operator
 
+def oneMax(bitstring: np.ndarray):
+    return bitstring.sum()
 
-def oneMax(bitstring):
-    return sum(bitstring)
 
-
-def leadingOnes(bitstring):
+def leadingOnes(bitstring: np.ndarray):
     if 0 not in bitstring:
-        return sum(bitstring)
-    return sum(bitstring[0:bitstring.index(0)])
+        return bitstring.sum()
+    return bitstring[0:np.where(bitstring==0)[0][0]].sum()
 
 
 def jump(k, bitstring):
@@ -24,12 +23,30 @@ def jump(k, bitstring):
     return sum
 
 
-def binVal(bitstring):
-    raise NotImplementedError
+def binVal(bitstring: np.ndarray):
+    """ Convert binary string to real valued number"""
+    s = 0
+    for i, val in enumerate(reversed(bitstring)):
+        s += (2 ** i) * val
+    return s
 
 
-def royalRoads(k, bitstring):
-    raise NotImplementedError
+def royalRoads(k, bitstring: np.ndarray):
+    """ Number of groups made up of only ones, where groups are created by intersecting at consecutive values. """
+    assert bitstring.shape[0] % k == 0, "N should be divisible by k by definition."
+    royal_roads = 0
+    for group in range(n/k):
+        royal = True
+        for val in bitstring[group*k:group*(k+1)]:
+            if val == 0:
+                royal = False
+                break
+
+        if royal:
+            royal_roads += 1
+
+    return royal_roads
+
 
 def run_tests(test_func,algorithm, stepsize = 25, compare_op):
     n = stepsize

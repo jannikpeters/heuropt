@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 
-def opoea(lamb, *,stop_criterion, initial_x: List, n: int, func, better_comp):
+def opoea(lamb,*,stop_criterion, initial_x: np.ndarray, n: int, func,  better_comp):
     count = 0
     x = initial_x
     orig_x = x.copy()

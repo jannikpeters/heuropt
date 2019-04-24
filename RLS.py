@@ -1,8 +1,8 @@
 from random import randint
-from typing import List
+import numpy as np
 
 
-def rls(*, stop_criterion, initial_x: List, n: int, func, better_comp):
+def rls(*, stop_criterion, initial_x: np.ndarray, n: int, func, better_comp):
     x = initial_x
     iterations = 0
     while func(x) != stop_criterion:
