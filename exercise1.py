@@ -1,3 +1,4 @@
+import operator
 from random import *
 import numpy as np
 from RLS import rls
