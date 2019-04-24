@@ -1,7 +1,9 @@
 from random import randint
 from typing import List
 import numpy as np
-def opoea(*,stop_criterion, initial_x: List, n: int, func, lamb, better_comp):
+
+
+def opoea(lamb, *,stop_criterion, initial_x: List, n: int, func, better_comp):
     count = 0
     x = initial_x
     orig_x = x.copy()
@@ -18,3 +20,6 @@ def opoea(*,stop_criterion, initial_x: List, n: int, func, lamb, better_comp):
             if better_comp(func(y),func(x)):
                 x = y.copy()
     return count
+
+
+opoea_func  = [lambda *,s,i,n,f,b: opoea(l,*,s,i,n,f,b) for l in [1,2,5,10]]

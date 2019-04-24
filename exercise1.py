@@ -31,11 +31,17 @@ def binVal(bitstring):
 def royalRoads(k, bitstring):
     raise NotImplementedError
 
+def run_tests(test_func,algorithm, stepsize = 25, compare_op):
+    n = stepsize
+    while True:
+        print("Length", n)
+        sum = 0
+        for i in range(10):
+            randList = [randint(0, 1) for _ in range(n)]
+            print(algorithm(initial_x = randList, n=n, stop_criterion=n, func=test_func, better_comp = compare_op ))
+        n += stepsize
 
-
-n = 25
-while True:
-    randList = [randint(0, 1) for _ in range(n)]
-    print(opoea(initial_x = randList, n=n, stop_criterion=n, func=oneMax, lamb = 1, better_comp = operator.gt ))
-    #print(rls(initial_x = randList, n=n, stop_criterion=n, func=leadingOnes, better_comp = operator.gt))
-    n += 25
+if __name__ == '__main__':
+    operators = [operator.gt, operator.ge]
+    k = 3
+    test_functions = [oneMax, lambda b: jump(k,b), leadingOnes, binVal, lambda b: royalRoads(k,b)]
