@@ -1,6 +1,7 @@
 import operator
 from random import *
 import numpy as np
+from itertools import product
 from RLS import rls
 from oneplusoneea import *
 import operator
@@ -46,7 +47,7 @@ def royalRoads(k, bitstring: np.ndarray):
         if royal:
             royal_roads += 1
 
-    return royal_roads
+    return royal_roads * k
 
 
 def run_tests(test_func,algorithm, compare_op, stepsize = 25):
@@ -55,12 +56,16 @@ def run_tests(test_func,algorithm, compare_op, stepsize = 25):
         print("Length", n)
         sum = 0
         for i in range(10):
-            randList = [randint(0, 1) for _ in range(n)]
+            randList = np.random.randint(2,size=n)
             print(algorithm(initial_x = randList, n=n, stop_criterion=n, func=test_func, better_comp = compare_op ))
         n += stepsize
+
 
 if __name__ == '__main__':
     operators = [operator.gt, operator.ge]
     k = 3
-    test_functions = [oneMax, lambda b: jump(k,b), leadingOnes, binVal, lambda b: royalRoads(k,b)]
+    test_functions = [oneMax, lambda b: jump(k, b), leadingOnes, binVal, lambda b: royalRoads(k,b)]
     algorithms = [rls] + opoea_func
+
+    for algo, test_fun, op in product(algorithms,test_functions,operators):
+        run_tests(test_fun,algo,op)

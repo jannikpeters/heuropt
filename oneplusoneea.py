@@ -22,4 +22,4 @@ def opoea(lamb,*,stop_criterion, initial_x: np.ndarray, n: int, func,  better_co
     return count
 
 
-opoea_func  = [lambda *,s,i,n,f,b: opoea(l,*,s,i,n,f,b) for l in [1,2,5,10]]
+opoea_func  = [lambda *,s,i,n,f,b: opoea(l,s,i,n,f,b) for l in [1,2,5,10]]
