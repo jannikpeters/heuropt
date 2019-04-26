@@ -1,13 +1,9 @@
-import operator
-from random import *
-import numpy as np
 import pandas as pd
 import signal
 from itertools import product
 from heuristics import *
 import operator
 from test_functions import *
-import matplotlib.pyplot as plt
 
 
 def run_one_test(test_case, heuristic, compare_op, n, repetitions=10, waiting_secs=1):
@@ -23,9 +19,9 @@ def run_one_test(test_case, heuristic, compare_op, n, repetitions=10, waiting_se
         signal.alarm(waiting_secs)
         try:
             rt = heuristic.optimize(initial_x=random_individual,
-                               n=n,
-                               test_case=test_case,
-                               compare=compare_op)
+                                    n=n,
+                                    test_case=test_case,
+                                    compare=compare_op)
             run_times.append(rt)
         except TimeoutError:
             time_outs += 1
@@ -47,36 +43,34 @@ def run_one_test(test_case, heuristic, compare_op, n, repetitions=10, waiting_se
     return res
 
 
-def run_tests(test_case, heurisitc, compare_op, stepsize=25, repetitions=10, waiting_secs=1):
-    print('Running %s,%s,%s' % (compare_op.__name__, test_case.name, heurisitc.name))
-    n = stepsize
-    results = []
-    while n < 100:
-        # print("Length", n)
-        res = run_one_test(test_case, heurisitc, compare_op, n, repetitions=repetitions, waiting_secs=waiting_secs)
-        results.append(res)
-        n += stepsize
-        if res['timeouts'] == res['repetitions']:
-            break
-
-    return results
-
-
-def plot(results):
-    df = pd.DataFrame(results)
-    df.plot(kind='scatter',x = 'n', y='avg_run_time',
-            title=results[0]['algorithm_name']+results[0]['test_fun']+results[0]['comparison_operator'])
-    plt.show()
-
-
 if __name__ == '__main__':
+    # experiment parameters
     comparators = [operator.gt, operator.ge]
     tests = [OneMax(), LeadingOnes(), Jump({'k': 3}), RoyalRoads({'r': 5}), BinVal()]
     heuristics = [RLS()] + [OnePlusOneEA({'lambda': i}) for i in [1, 2, 5, 10]]
-    waiting_sec = 1
+    waiting_secs = 10
+    stepsize = 25
+    repetitions = 10
+    log_file = 'experiments.wt{%s}.st{%s}.rep{%s}.csv' % (waiting_secs, stepsize, repetitions)
 
-    print(heuristics)
+    experiments = product(heuristics, tests, comparators)
+    experiments = [(i, *exp) for i, exp in enumerate(experiments)]
+    experiment_out_of_time = len(experiments) * [0]
+    n = stepsize
+    results = []
 
-    for algo, test_fun, op in product(heuristics, tests, comparators):
-        results = run_tests(test_fun, algo, op, waiting_secs=waiting_sec)
-        plot(results)
+    while sum(experiment_out_of_time) < len(experiments):
+
+        for id, heuristic, test_case, comparator in experiments:
+            if experiment_out_of_time[id] == 1:
+                continue
+            else:
+                res = run_one_test(test_case, heuristic, comparator, n, repetitions=repetitions,
+                                   waiting_secs=waiting_secs)
+                results.append(res)
+                print(res)
+                if res['timeouts'] == res['repetitions']:
+                    experiment_out_of_time[id] = 1
+
+        n += stepsize
+        pd.DataFrame.from_records(results).to_csv(log_file)
