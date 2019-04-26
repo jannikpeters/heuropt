@@ -1,11 +1,13 @@
 import operator
 from random import *
 import numpy as np
+import pandas as pd
 import signal
 from itertools import product
 from heuristics import *
 import operator
 from test_functions import *
+import matplotlib.pyplot as plt
 
 
 def run_one_test(test_case, heuristic, compare_op, n, repetitions=10, waiting_secs=1):
@@ -57,6 +59,15 @@ def run_tests(test_case, heurisitc, compare_op, stepsize=25, repetitions=10, wai
         if res['timeouts'] == res['repetitions']:
             break
 
+    return results
+
+
+def plot(results):
+    df = pd.DataFrame(results)
+    df.plot(kind='scatter',x = 'n', y='avg_run_time',
+            title=results[0]['algorithm_name']+results[0]['test_fun']+results[0]['comparison_operator'])
+    plt.show()
+
 
 if __name__ == '__main__':
     comparators = [operator.gt, operator.ge]
@@ -68,3 +79,4 @@ if __name__ == '__main__':
 
     for algo, test_fun, op in product(heuristics, tests, comparators):
         run_tests(test_fun, algo, op, waiting_secs=waiting_sec)
+        plot(results)
