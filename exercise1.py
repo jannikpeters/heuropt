@@ -78,5 +78,5 @@ if __name__ == '__main__':
     print(heuristics)
 
     for algo, test_fun, op in product(heuristics, tests, comparators):
-        run_tests(test_fun, algo, op, waiting_secs=waiting_sec)
+        results = run_tests(test_fun, algo, op, waiting_secs=waiting_sec)
         plot(results)
