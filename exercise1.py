@@ -3,7 +3,6 @@ from random import *
 import numpy as np
 import signal
 from itertools import product
-from RLS import rls
 from heuristics import *
 import operator
 from test_functions import *
