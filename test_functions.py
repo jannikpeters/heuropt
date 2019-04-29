@@ -54,7 +54,7 @@ class Jump(TestFunction):
         return n
 
     def f(self, bitstring: np.ndarray):
-        aggregate = sum(bitstring)
+        aggregate = np.sum(bitstring)
         if aggregate < len(bitstring) - self.parameters['k']:
             return aggregate
         if aggregate < len(bitstring):
