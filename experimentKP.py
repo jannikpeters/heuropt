@@ -13,28 +13,27 @@ def run():
         df = pd.DataFrame(columns=['filename', 'algorithm', 'iterations', 'solution', 'time',
                                    'kp_capacity', 'item_number', 'optimal_solution'])
         ttsp = TTSP(file)
+        if ttsp.knapsack_capacity < 100000:
+            optimum, assignment, steps, is_timed_out, elapsed_time = DP(ttsp, 10).optimize()
+            df = append_row(df, optimum, ttsp, 'DP', file, optimum, assignment, steps, is_timed_out,
+                            elapsed_time)
+            optimum = None if is_timed_out else optimum
 
-        optimum, assignment, steps, is_timed_out, elapsed_time = DP(ttsp, 10).optimize()
-        df = append_row(df, optimum, ttsp, 'DP', file, optimum, assignment, steps, is_timed_out,
-                        elapsed_time)
-        optimum = None if is_timed_out else optimum
+            value, greedy_assignment, steps, is_timed_out, elapsed_time = Greedy(ttsp).optimize()
+            df = append_row(df, optimum, ttsp, 'Greedy', file, value, greedy_assignment, steps,
+                            is_timed_out, elapsed_time)
 
-        value, greedy_assignment, steps, is_timed_out, elapsed_time = Greedy(ttsp).optimize()
-        df = append_row(df, optimum, ttsp, 'Greedy', file, value, greedy_assignment, steps,
-                        is_timed_out, elapsed_time)
+            test_case = TestCase(optimum, 10, ttsp)
 
-        test_case = TestCase(optimum, 10, ttsp)
-
-        algorithms = [
-            OnePlusOneEA(ttsp, test_case.copy(), np.zeros(ttsp.item_num)),
-            OnePlusOneEA(ttsp, test_case.copy(), greedy_assignment)
-        ]
-        if ttsp.knapsack_capacity < 10000:
+            algorithms = [
+                OnePlusOneEA(ttsp, test_case.copy(), np.zeros(ttsp.item_num)),
+                OnePlusOneEA(ttsp, test_case.copy(), greedy_assignment)
+            ]
             for algo in algorithms:
                 value, assignment, steps, is_timed_out, elapsed_time = algo.optimize()
                 df = append_row(df, optimum, ttsp, algo.name, file, value, assignment, steps,
                                 is_timed_out, elapsed_time)
-        df.to_csv('result/'+file)
+        df.to_csv('results/' + file[6:] + '.csv')
 
 
 def append_row(df, optimum, ttsp, algo_name, file, value, assignment, steps, is_timed_out,
