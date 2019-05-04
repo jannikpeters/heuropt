@@ -18,10 +18,11 @@ def solve_greedy(ttspModel):
             if(value > ttspModel.item_profit[i] ):
                 return value, assignment
             else:
-                otherAssigment = [0]*n
+                otherAssigment = [0]*ttspModel.item_num
                 otherAssigment[i] = 1
                 return ttspModel.item_profit[i], otherAssigment
     return value, assignment
+
 def knapsackValue(ttspModel, assignment):
     weight = 0
     value = 0

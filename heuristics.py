@@ -6,6 +6,8 @@ from random import randint
 import numpy as np
 from functools import partial
 
+from experimentKP import TestCase
+
 
 class Heuristic:
 
@@ -65,3 +67,5 @@ class OnePlusOneEA(Heuristic):
                     x = y.copy()
 
         return time_steps
+
+
