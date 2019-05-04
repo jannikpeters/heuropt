@@ -6,6 +6,7 @@ import numpy as np
 from model import TTSP
 from TestCase import TestCase
 
+
 class OnePlusOneEA():
 
     def __init__(self, ttspModel: TTSP, test_case: TestCase, initial_x: np.ndarray,
@@ -48,7 +49,7 @@ class OnePlusOneEA():
 
         return value, x, self.test_case.steps, self.test_case.is_timed_out, \
                self.test_case.elapsed_time()
-        
+
 
 class Greedy():
     def __init__(self, ttsp: TTSP):
@@ -81,7 +82,6 @@ class DP():
         self.ttsp = ttsp
         self.timeout_min = timeout_min
 
-    @functools.lru_cache()
     def optimize(self):
         maximum_weight = self.ttsp.knapsack_capacity
         n = self.ttsp.item_num
@@ -105,3 +105,34 @@ class DP():
                 else:
                     arr[i][w] = arr[i-1][w]
         return current_best, [], 0, aborted, time.time() - start_time
+
+    class DPMicroOpt():
+        def __init__(self, ttsp: TTSP, timeout_min):
+            self.ttsp = ttsp
+            self.timeout_min = timeout_min
+
+        def optimize(self):
+            maximum_weight = self.ttsp.knapsack_capacity
+            max_weight_range = range(maximum_weight + 1)
+            n = self.ttsp.item_num
+            arr = np.zeros((n + 1, maximum_weight + 1))
+            item_weight = self.ttsp.item_weight.copy()
+            item_profit = self.ttsp.item_profit.copy()
+            start_time = time.time()
+            end_time = start_time + 60 * self.timeout_min
+            aborted = False
+            current_best = 0
+            for i in range(n + 1):
+                if time.time() > end_time:
+                    aborted = True
+                    break
+                for w in max_weight_range:
+                    if i == 0 or w == 0:
+                        arr[i][w] = 0
+                    elif item_weight[i - 1] <= w:
+                        arr[i][w] = max(item_profit[i - 1] + arr[i - 1][w - int(
+                            item_weight[i - 1])], arr[i - 1][w])
+                        current_best = max(current_best, arr[i][w])
+                    else:
+                        arr[i][w] = arr[i - 1][w]
+            return current_best, [], 0, aborted, time.time() - start_time

@@ -41,8 +41,8 @@ class TTSP:
         for i in range(self.item_num):
             line = fp.readline()
             temp = line.split('\t')
-            self.item_profit[i] = float(temp[1])
-            self.item_weight[i] = float(temp[2])
+            self.item_profit[i] = int(temp[1])
+            self.item_weight[i] = int(temp[2])
             self.item_node[i] = int(temp[3])
 
     def evaluate_solution(self, tour: list, packing_list: np.ndarray):

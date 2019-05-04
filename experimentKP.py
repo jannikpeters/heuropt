@@ -5,7 +5,7 @@ import pandas as pd
 from glob import iglob
 
 from TestCase import TestCase
-from knapsack_heuristics import OnePlusOneEA, Greedy, DP
+from knapsack_heuristics import OnePlusOneEA, Greedy, DP, DPMicroOpt
 from model import TTSP
 import numpy as np
 
@@ -16,15 +16,17 @@ def run():
 
 
 def run_for_file(file):
-    timeout_min = 1
+    timeout_min = 10
     df = pd.DataFrame(columns=['filename', 'algorithm', 'iterations', 'solution', 'time',
                                'kp_capacity', 'item_number', 'optimal_solution', 'aborted'])
     ttsp = TTSP(file)
-    if ttsp.knapsack_capacity < 100000:
+    if ttsp.knapsack_capacity < 1000000:
         print('Running for file ', file)
-        optimum, assignment, steps, is_timed_out, elapsed_time = DP(ttsp, timeout_min).optimize()
-        optimum = None if is_timed_out else optimum # must be None so equality is never true
-        df = append_row(df, optimum, ttsp, 'DP', file, optimum, assignment, steps, is_timed_out,
+
+        optimum, assignment, steps, is_timed_out, elapsed_time = DPMicroOpt(ttsp, timeout_min).optimize()
+        dp_res = optimum
+        optimum = None if is_timed_out else optimum  # must be None so equality is never true
+        df = append_row(df, optimum, ttsp, 'DP_opt', file, dp_res, assignment, steps, is_timed_out,
                         elapsed_time)
 
         value, greedy_assignment, steps, is_timed_out, elapsed_time = Greedy(ttsp).optimize()
