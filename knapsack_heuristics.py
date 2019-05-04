@@ -48,6 +48,7 @@ class OnePlusOneEA():
 
         return value, x, self.test_case.steps, self.test_case.is_timed_out, \
                self.test_case.elapsed_time()
+        
 
 class Greedy():
     def __init__(self, ttsp: TTSP):
@@ -88,6 +89,7 @@ class DP():
         start_time = time.time()
         end_time = start_time + 60 * self.timeout_min
         aborted = False
+        current_best = 0
         for i in range(n+1):
             if time.time() > end_time:
                 aborted = True
@@ -96,8 +98,10 @@ class DP():
                 if i==0 or w==0:
                     arr[i][w] = 0
                 elif self.ttsp.item_weight[i-1] <= w:
+
                     arr[i][w] = max(self.ttsp.item_profit[i-1] + arr[i-1][w-int(
                         self.ttsp.item_weight[i-1])],  arr[i-1][w])
+                    current_best = max(current_best,arr[i][w] )
                 else:
                     arr[i][w] = arr[i-1][w]
-        return arr[n][w], [], 0, aborted, time.time() - start_time
+        return current_best, [], 0, aborted, time.time() - start_time
