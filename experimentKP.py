@@ -1,3 +1,6 @@
+from concurrent.futures import ProcessPoolExecutor
+import os
+from itertools import repeat
 from multiprocessing.pool import Pool
 
 import pandas as pd
@@ -11,16 +14,26 @@ import numpy as np
 
 
 def run():
-    with Pool() as p:
-        p.map(run_for_file, iglob('data/**.ttp'))
+    performance_factor = 10
+    if os.cpu_count() < 5:
+        print('ATTENTION you have a slow pc, thus the problem size has been reduced')
+        performance_factor = 1
+    # with Pool() as p:
+    #     r = p.map(run_for_file, zip(iglob('data/**.ttp'), repeat(performance_factor)))
+    with ProcessPoolExecutor() as executor:
+        executor.map(run_for_file, zip(iglob('data/**.ttp'), repeat(performance_factor)))
 
 
-def run_for_file(file):
-    timeout_min = 10
+def run_for_file(file_performance_factor):
+    print('hi')
+    file, performance_factor = file_performance_factor
+    timeout_min = 1 * performance_factor
+    max_knapsack_capacity = 100000 *performance_factor
+
     df = pd.DataFrame(columns=['filename', 'algorithm', 'iterations', 'solution', 'time',
                                'kp_capacity', 'item_number', 'optimal_solution', 'aborted'])
     ttsp = TTSP(file)
-    if ttsp.knapsack_capacity < 1000000:
+    if ttsp.knapsack_capacity < max_knapsack_capacity:
         print('Running for file ', file)
 
         optimum, assignment, steps, is_timed_out, elapsed_time = DPMicroOpt(ttsp, timeout_min).optimize()
