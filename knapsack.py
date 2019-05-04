@@ -1,6 +1,20 @@
 from model import *
+import functools
 
-
+def solve_greedy(ttspModel):
+    arr = []
+    for i in range(ttspModel.item_num):
+        arr.append((ttspModel.item_profit[i]/ttspModel.item_weight[i], i))
+    value, weight = 0,0
+    arr.sort()
+    for (val,i) in reversed(arr):
+        print(val, i)
+        if weight + ttspModel.item_weight[i] <= ttspModel.knapsack_capacity:
+            value += ttspModel.item_profit[i]
+            weight += ttspModel.item_weight[i]
+        else:
+            return max(value, ttspModel.item_weight[i])
+    return value
 def knapsackValue(ttspModel, assignment):
     weight = 0
     value = 0
@@ -21,11 +35,12 @@ def inducedValue(ttspModel, assignment, change_list, value, weight):
         return -1, -1
     else:
         return new_value, new_weight
+
 def commit_changes(assignment, change_list):
     for item in change_list:
         assignment[item] = 1 - assignment[item]
-def solveDP(ttspModel):
-    return 0
+
+
 
 def optimizeOnePlusOne(ttspModel, initial_x: np.ndarray, n: int,  optimum):
     value, weight = knapsackValue(ttspModel, initial_x)
@@ -53,4 +68,20 @@ ttsp = TTSP(file)
 for i in range(ttsp.item_num):
     print(ttsp.item_profit[i])
     print(ttsp.item_weight[i])
-optimizeOnePlusOne(ttsp, np.zeros(ttsp.item_num), ttsp.item_num, ttsp.item_num)
+
+@functools.lru_cache(maxsize=500)
+def solve_knapsack_primitive(n, maximum_weight):
+    arr = np.zeros((n+1, maximum_weight+1))
+    for i in range(n+1):
+        for w in range(maximum_weight+1):
+            if i==0 or w==0:
+                arr[i][w] = 0
+            elif ttsp.item_weight[i-1] <= w:
+                arr[i][w] = max(ttsp.item_profit[i-1] + arr[i-1][w-int(ttsp.item_weight[i-1])],  arr[i-1][w])
+            else:
+                arr[i][w] = arr[i-1][w]
+    return arr[n][w]
+print(ttsp.item_num, ttsp.knapsack_capacity)
+print(solve_greedy(ttsp))
+optimum = solve_knapsack_primitive(ttsp.item_num, ttsp.knapsack_capacity)
+optimizeOnePlusOne(ttsp, np.zeros(ttsp.item_num), ttsp.item_num, optimum)
