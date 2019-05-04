@@ -6,15 +6,22 @@ def solve_greedy(ttspModel):
     for i in range(ttspModel.item_num):
         arr.append((ttspModel.item_profit[i]/ttspModel.item_weight[i], i))
     value, weight = 0,0
+    assignment = [0]*ttspModel.item_num
     arr.sort()
     for (val,i) in reversed(arr):
         print(val, i)
         if weight + ttspModel.item_weight[i] <= ttspModel.knapsack_capacity:
             value += ttspModel.item_profit[i]
             weight += ttspModel.item_weight[i]
+            assignment[i] = 1
         else:
-            return max(value, ttspModel.item_weight[i])
-    return value
+            if(value > ttspModel.item_profit[i] ):
+                return value, assignment
+            else:
+                otherAssigment = [0]*n
+                otherAssigment[i] = 1
+                return ttspModel.item_profit[i], otherAssigment
+    return value, assignment
 def knapsackValue(ttspModel, assignment):
     weight = 0
     value = 0
@@ -56,7 +63,7 @@ def optimizeOnePlusOne(ttspModel, initial_x: np.ndarray, n: int, optimum):
         print(value)
         time_steps += 1
         change_list = []
-        changes = np.random.binomial(n=n, p=(1 / n))
+        changes = np.random.binomial(n=n, p=(2 / n))
         changeVals = np.random.choice(n, changes)
         for j in changeVals:
             change_list.append(j)
@@ -88,6 +95,7 @@ def solve_knapsack_primitive(n, maximum_weight):
                 arr[i][w] = arr[i-1][w]
     return arr[n][w]
 print(ttsp.item_num, ttsp.knapsack_capacity)
-print(solve_greedy(ttsp))
-optimum = solve_knapsack_primitive(ttsp.item_num, ttsp.knapsack_capacity)
-optimizeOnePlusOne(ttsp, np.zeros(ttsp.item_num), ttsp.item_num, optimum)
+greedy_val, greedy_assigment = solve_greedy(ttsp)
+#optimum = solve_knapsack_primitive(ttsp.item_num, ttsp.knapsack_capacity)
+#print(optimum)
+optimizeOnePlusOne(ttsp, np.array(greedy_assigment), ttsp.item_num, greedy_val)
