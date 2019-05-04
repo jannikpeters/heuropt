@@ -8,8 +8,9 @@ from TestCase import TestCase
 
 class OnePlusOneEA():
 
-    def __init__(self, ttspModel: TTSP, test_case: TestCase, initial_x: np.ndarray):
-        self.name = '(1+1)-EA'
+    def __init__(self, ttspModel: TTSP, test_case: TestCase, initial_x: np.ndarray,
+                 name_addition: str):
+        self.name = '(1+1)-EA ' + name_addition
         self.ttsp = ttspModel
         self.test_case = test_case
         self.initial_x = initial_x
