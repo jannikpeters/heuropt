@@ -47,8 +47,3 @@ class TTSP:
 
     def evaluate_solution(self, tour: list, packing_list: np.ndarray):
         pass
-
-
-if __name__ == '__main__':
-    file = 'data/a280_n279_bounded-strongly-corr_05.ttp'
-    ttsp = TTSP(file)
