@@ -19,9 +19,10 @@ class OnePlusOneEA():
     def _inducedValue(self, assignment, change_list, value, weight):
         new_value = value
         new_weight = weight
-        for item in change_list:
-            new_value += ((-2) * assignment[item] + 1) * self.ttsp.item_profit[item]
-            new_weight += ((-2) * assignment[item] + 1) * self.ttsp.item_weight[item]
+        for item_index in change_list:
+            # if the item is currently 0 we will make it 1 and vice versa
+            new_value += ((-2) * assignment[item_index] + 1) * self.ttsp.item_profit[item_index]
+            new_weight += ((-2) * assignment[item_index] + 1) * self.ttsp.item_weight[item_index]
         if new_weight > self.ttsp.knapsack_capacity:
             return -1, -1
         else:
@@ -36,16 +37,13 @@ class OnePlusOneEA():
         x = self.initial_x
         n = self.ttsp.item_num
         while not self.test_case.is_done(value):
-            change_list = []
-            changes = np.random.binomial(n=n, p=(2 / n))
-            changeVals = np.random.choice(n, changes)
-            for j in changeVals:
-                change_list.append(j)
-            new_value, new_weight = self._inducedValue(x, change_list, value, weight)
-            if new_value > value:
+            number_of_changes = np.random.binomial(n=n, p=(2 / n))
+            items_to_change = np.random.choice(n, number_of_changes, replace=False)
+            new_value, new_weight = self._inducedValue(x, items_to_change, value, weight)
+            if new_value >= value and new_weight <= self.ttsp.knapsack_capacity: # todo: this
                 value = new_value
                 weight = new_weight
-                self._commit_changes(x, change_list)
+                self._commit_changes(x, items_to_change)
 
         return value, x, self.test_case.steps, self.test_case.is_timed_out, \
                self.test_case.elapsed_time()
@@ -136,3 +134,43 @@ class DPMicroOpt():
                 else:
                     arr[i][w] = arr[i - 1][w]
         return current_best, [], 0, aborted, time.time() - start_time
+
+class DPNumpy():
+    def __init__(self, ttsp: TTSP, timeout_min):
+        self.ttsp = ttsp
+        self.timeout_min = timeout_min
+
+    def optimize(self):
+        item_weight = self.ttsp.item_weight.copy()
+        item_profit = self.ttsp.item_profit.copy()
+        number_of_items = self.ttsp.item_num
+        capacity = self.ttsp.knapsack_capacity
+        start_time = time.time()
+        end_time = start_time + 60 * self.timeout_min
+        aborted = False
+
+        grid = np.zeros((number_of_items + 1, capacity + 1), dtype=int)
+        grid[0] = 0
+        for item in range(number_of_items):
+            if time.time() > end_time:
+                aborted = True
+                break
+            this_weight = item_weight[item]
+            this_value = item_profit[item]
+            grid[item + 1, :this_weight] = grid[item, :this_weight]
+            temp = grid[item, :-this_weight] + this_value
+            grid[item + 1, this_weight:] = np.where(temp > grid[item, this_weight:],
+                                                    temp,
+                                                    grid[item, this_weight:])
+
+        solution_value = grid[number_of_items, capacity]
+        solution_weight = 0
+        taken = []
+        k = capacity
+        for item in range(number_of_items, 0, -1):
+            if grid[item][k] != grid[item - 1][k]:
+                taken.append(item - 1)
+                k -= item_weight[item - 1]
+                solution_weight += item_weight[item - 1]
+
+        return solution_value, taken, 0, aborted, time.time() - start_time

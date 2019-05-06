@@ -78,6 +78,10 @@ def show_plot(title: str, frame: DataFrame, y_axis: str, label: str, x_axis='loc
     plt.close()
 
 
+# def plot_all_algo_vs(df):
+#     show_plot(title='All Algos Compared',x_axis= )
+
+
 def plot_capacity_item_vs_time(df):
     # done
     tmp_df = df[df.algorithm == 'DP_opt']

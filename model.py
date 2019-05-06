@@ -34,9 +34,9 @@ class TTSP:
 
         # read items
         line = fp.readline()
-        self.item_weight = np.zeros(self.item_num)
-        self.item_profit = np.zeros(self.item_num)
-        self.item_node = np.zeros(self.item_num)
+        self.item_weight = np.zeros(self.item_num, dtype=int)
+        self.item_profit = np.zeros(self.item_num, dtype=int)
+        self.item_node = np.zeros(self.item_num, dtype=int)
 
         for i in range(self.item_num):
             line = fp.readline()
