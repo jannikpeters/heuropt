@@ -59,11 +59,11 @@ def run_for_file(file_performance_factor):
         for p in [2, 4, 8]:
             algorithms.append(
                 OnePlusOneEA(ttsp, test_case.copy(), np.zeros(ttsp.item_num, dtype=int),
-                             'zero_init_bin_p_' + str(p), lambda n: return_bin_vals(n, p)))
+                             'zero_init_bin_p_' + str(p), lambda n: return_bin_vals(n, p/n)))
             algorithms.append(
                 OnePlusOneEA(ttsp, test_case.copy(), greedy_assignment, 'greedy_init_bin_p' +
                              str(p),
-                             lambda n: return_bin_vals(n, p)))
+                             lambda n: return_bin_vals(n, p/n)))
         for algo in algorithms:
             print(algo.name)
             value, assignment, steps, is_timed_out, elapsed_time, result_over_time = algo.optimize()
