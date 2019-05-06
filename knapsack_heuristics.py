@@ -149,7 +149,7 @@ class DPNumpy():
         start_time = time.time()
         end_time = start_time + 60 * self.timeout_min
         aborted = False
-
+        current_best = 0
         grid = np.zeros((number_of_items + 1, capacity + 1), dtype=int)
         grid[0] = 0
         for item in range(number_of_items):
@@ -164,8 +164,9 @@ class DPNumpy():
             grid[item + 1, this_weight:] = np.where(temp > grid[item, this_weight:],
                                                     temp,
                                                     grid[item, this_weight:])
+            current_best = max(current_best, grid[item+1][this_weight])
 
-        solution_value = grid[number_of_items, capacity]
+        solution_value = grid[number_of_items, capacity] if not aborted else current_best
         solution_weight = 0
         taken = []
         k = capacity
@@ -175,4 +176,6 @@ class DPNumpy():
                 k -= item_weight[item - 1]
                 solution_weight += item_weight[item - 1]
 
-        return solution_value, taken, 0, aborted, time.time() - start_time
+        bitstring = np.array(1 if item_index in taken else 0 for item_index in range(
+                number_of_items+1))
+        return solution_value, bitstring, 0, aborted, time.time() - start_time
