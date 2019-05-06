@@ -43,18 +43,18 @@ def run_for_file(file_performance_factor):
     if ttsp.knapsack_capacity < max_knapsack_capacity:
         print('Running for file ', file)
 
-        optimum, assignment, steps, is_timed_out, elapsed_time, result_over_time = DPNumpy(ttsp,
-                                                                                           timeout_min).optimize()
-        dp_res = optimum
-        optimum = None if is_timed_out else optimum  # must be None so equality is never true
-        df = append_row(df, optimum, ttsp, 'DP_numpy', file, dp_res, assignment, steps,
-                        is_timed_out,
-                        elapsed_time, result_over_time)
+        dp_res, bin_str, steps, is_aborted, run_time, intermed_vals = DPNumpy(ttsp,
+                                                                              timeout_min).optimize()
 
-        value, greedy_assignment, steps, is_timed_out, elapsed_time, result_over_time = Greedy(
+        optimum = None if is_aborted else dp_res  # must be None so equality is never true
+        df = append_row(df, optimum, ttsp, 'DP_numpy', file, dp_res, bin_str, steps,
+                        is_aborted,
+                        run_time, intermed_vals)
+
+        value, greedy_bin_str, steps, is_aborted, run_time, intermed_vals = Greedy(
             ttsp).optimize()
-        df = append_row(df, optimum, ttsp, 'Greedy', file, value, greedy_assignment, steps,
-                        is_timed_out, elapsed_time, result_over_time)
+        df = append_row(df, optimum, ttsp, 'Greedy', file, value, greedy_bin_str, steps,
+                        is_aborted, run_time, intermed_vals)
 
         test_case = TestCase(optimum, timeout_min, ttsp)
 
@@ -64,18 +64,17 @@ def run_for_file(file_performance_factor):
                 OnePlusOneEA(ttsp, test_case.copy(), np.zeros(ttsp.item_num, dtype=int),
                              'zero_init_bin_p_' + str(p), lambda n: return_bin_vals(n, p / n)))
             algorithms.append(
-                OnePlusOneEA(ttsp, test_case.copy(), greedy_assignment, 'greedy_init_bin_p' +
+                OnePlusOneEA(ttsp, test_case.copy(), greedy_bin_str, 'greedy_init_bin_p' +
                              str(p),
                              lambda n: return_bin_vals(n, p / n)))
         for algo in algorithms:
             print(algo.name)
-            value, assignment, steps, is_timed_out, elapsed_time, result_over_time = algo.optimize()
-            df = append_row(df, optimum, ttsp, algo.name, file, value, assignment, steps,
-                            is_timed_out, elapsed_time, result_over_time)
+            value, bin_str, steps, is_aborted, run_time, intermed_vals = algo.optimize()
+            df = append_row(df, optimum, ttsp, algo.name, file, value, bin_str, steps,
+                            is_aborted, run_time, intermed_vals)
 
         print('Writing result ', file)
-        df.to_pickle('results_test/' + file[5:] + '.pckl')
-        df.to_csv('results_test/' + file[5:] + '.csv')
+        df.to_csv('results_2/' + file[5:] + '.csv')
     else:
         print('Skipped file ', file)
 

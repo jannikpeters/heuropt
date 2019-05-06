@@ -6,8 +6,9 @@ import pandas as pd
 
 def load_table():
     df = pd.DataFrame(columns=['filename', 'algorithm', 'iterations', 'solution', 'time',
-                               'kp_capacity', 'item_number', 'optimal_solution', 'aborted'])
-    for file in iglob('results_test/**.csv'):
+                               'kp_capacity', 'item_number', 'optimal_solution', 'aborted',
+                               'result_over_time'])
+    for file in iglob('results_2/**.csv'):
         new_df = pd.read_csv(file)
         df = df.append(new_df, ignore_index=True)
     return df
@@ -179,6 +180,7 @@ if __name__ == '__main__':
     df = load_table()
    # oha = df[df.solution > df.optimal_solution]
    # oha
+    # for tomorrow ast.literal_eval(x.loc[2]) for the list which is a string from csv
     plot_capacity_item_vs_time(df)
     plot_greedy_optimum_vs_solution(df)
     plot_aborted_DP(df)
