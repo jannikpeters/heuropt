@@ -160,6 +160,7 @@ class DPNumpy():
             this_value = item_profit[item]
             grid[item + 1, :this_weight] = grid[item, :this_weight]
             temp = grid[item, :-this_weight] + this_value
+            # The second loop is contained in the 'np.where' which iterates through the given arrays
             grid[item + 1, this_weight:] = np.where(temp > grid[item, this_weight:],
                                                     temp,
                                                     grid[item, this_weight:])
