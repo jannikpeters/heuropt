@@ -12,7 +12,8 @@ def load_table():
     for file in iglob('results/**.csv'):
         new_df = pd.read_csv(file)
         df = df.append(new_df, ignore_index=True)
-    show_plot('aTitle', df, y_axis='time', x_axis='kp_capacity', label='stuff')
+    return df
+    #show_plot('aTitle', df, y_axis='time', x_axis='kp_capacity', label='stuff')
     #df.plot(title = 'Test', x='kp_capacity', y='time')
     #fig, ax = plt.subplots()
     #df.groupby('algorithm').plot(kind='scatter', x='time', y='kp_capacity', ax=ax, use_index=False)
@@ -87,4 +88,4 @@ def show_plot(title: str, frame: DataFrame, y_axis: str, label: str, x_axis='loc
 
 
 if __name__ == '__main__':
-    load_table()
+    df = load_table()
