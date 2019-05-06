@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-
-
 def load_table():
     df = pd.DataFrame(columns=['filename', 'algorithm', 'iterations', 'solution', 'time',
                                'kp_capacity', 'item_number', 'optimal_solution', 'aborted'])
@@ -13,11 +11,11 @@ def load_table():
         new_df = pd.read_csv(file)
         df = df.append(new_df, ignore_index=True)
     return df
-    #show_plot('aTitle', df, y_axis='time', x_axis='kp_capacity', label='stuff')
-    #df.plot(title = 'Test', x='kp_capacity', y='time')
-    #fig, ax = plt.subplots()
-    #df.groupby('algorithm').plot(kind='scatter', x='time', y='kp_capacity', ax=ax, use_index=False)
-    #plt.show()
+    # show_plot('aTitle', df, y_axis='time', x_axis='kp_capacity', label='stuff')
+    # df.plot(title = 'Test', x='kp_capacity', y='time')
+    # fig, ax = plt.subplots()
+    # df.groupby('algorithm').plot(kind='scatter', x='time', y='kp_capacity', ax=ax, use_index=False)
+    # plt.show()
 
 
 import random
@@ -26,11 +24,9 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 
 
-
-
 def show_plot(title: str, frame: DataFrame, y_axis: str, label: str, x_axis='loc',
               log_scale_y=False,
-              log_scale_x=False, remove_outliers=False, jitter=True, should_balance=False):
+              log_scale_x=False, remove_outliers=False, jitter=True, alpha=1, marker='.', should_balance=False):
     """
     Plots any two features plus the class as color as a scatter plot
 
@@ -57,11 +53,9 @@ def show_plot(title: str, frame: DataFrame, y_axis: str, label: str, x_axis='loc
     plt.rc('font', **font)
     plt.title(title + ': ' + x_axis + " - " + y_axis)
 
-
     if remove_outliers:
         frame = frame.copy()
         frame = frame[frame[x_axis] < frame[x_axis].quantile(.95)]
-    alpha = 0.2
     frame['color'] = [[0, 0.8, 0, alpha] if c else [1, 0, 0, alpha] for c in frame['filename']]
     if jitter:
         # Add some space between the points
@@ -78,14 +72,28 @@ def show_plot(title: str, frame: DataFrame, y_axis: str, label: str, x_axis='loc
     if log_scale_y:
         plt.yscale('log')
 
-    plt.scatter(frame['x_rnd'], frame['y_rnd'], c=frame['color'], edgecolors='none',
-                marker='.')
+    plt.scatter(frame['x_rnd'], frame['y_rnd'], c=frame['color'], edgecolors='none')
 
     plt.show()
     plt.close()
 
 
+def plot_capacity_item_vs_time(df):
+    a = 1
+    print(df.algorithm.unique())
+    tmp_df = df[df.algorithm == 'DP_opt']
+    tmp_df['kp_capacity x #items'] = tmp_df.item_number * tmp_df.kp_capacity
+    print(df.aborted.unique())
+    print(tmp_df)
+    aborted = tmp_df[tmp_df.aborted == True].count()['aborted']
+    tmp_df = tmp_df[tmp_df.aborted == False]
+    print(tmp_df.head())
+    show_plot('Solving DP opt [aborted: %s/%s]' % (aborted, len(tmp_df)+aborted),
+              tmp_df,
+              y_axis='time',
+              x_axis='kp_capacity x #items', alpha=0.5, jitter=False, label='nice', marker='o')
 
 
 if __name__ == '__main__':
     df = load_table()
+    plot_capacity_item_vs_time(df)
