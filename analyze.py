@@ -79,21 +79,60 @@ def show_plot(title: str, frame: DataFrame, y_axis: str, label: str, x_axis='loc
 
 
 def plot_capacity_item_vs_time(df):
-    a = 1
-    print(df.algorithm.unique())
+
     tmp_df = df[df.algorithm == 'DP_opt']
     tmp_df['kp_capacity x #items'] = tmp_df.item_number * tmp_df.kp_capacity
-    print(df.aborted.unique())
-    print(tmp_df)
     aborted = tmp_df[tmp_df.aborted == True].count()['aborted']
     tmp_df = tmp_df[tmp_df.aborted == False]
-    print(tmp_df.head())
     show_plot('Solving DP opt [aborted: %s/%s]' % (aborted, len(tmp_df)+aborted),
               tmp_df,
               y_axis='time',
               x_axis='kp_capacity x #items', alpha=0.5, jitter=False, label='nice', marker='o')
 
+def plot_greedy_optimum_vs_solution(df):
+
+    print(df.columns)
+    print(df.algorithm.unique())
+
+    tmp_df = df[df.algorithm == 'Greedy']
+    tmp_df['% of optimal_solution'] = tmp_df.solution / tmp_df.optimal_solution
+    tmp_df['kp_capacity x #items'] = tmp_df.item_number * tmp_df.kp_capacity
+
+    show_plot('Solving via Greedy',
+              tmp_df,
+              y_axis='% of optimal_solution',
+              x_axis='kp_capacity', alpha=0.5, jitter=False, label='nice', marker='o')
+
+
+def plot_aborted_DP(df):
+
+    tmp_df = df[df.algorithm == 'DP_opt']
+    tmp_df['kpitems'] = tmp_df.item_number * tmp_df.kp_capacity
+    #tmp_df.group_by('capacity').count()
+    #aborted = tmp_df[tmp_df.aborted == True].count()['aborted']
+    #tmp_df = tmp_df[tmp_df.aborted == False]
+    tmp_df['was_aborted'] = tmp_df.aborted.apply(lambda x: 1.0 if x else 0)
+    tmp_df['was_finished'] = tmp_df.aborted.apply(lambda x: 1.0 if not x else 0)
+
+    plt.show()
+
+def plot_ea_vs_ea_init(df):
+    print(df.algorithm.unique())
+    tmp_df = df[df.algorithm.isin(['(1+1)-EA zero_init','(1+1)-EA greedy_init'])]
+    tmp_df.dropna(inplace=True)
+    # only works if we know optimal solution!
+    tmp_df['%opt'] = tmp_df.solution / tmp_df.optimal_solution
+    # only works if we know optimal solution!
+    tmp_df = tmp_df.pivot(index='filename',columns='algorithm',values=['time','%opt'])
+    #print(tmp_df.columns)
+
+    #plt.scatter(x=tmp_df.loc[:,('(1+1)-EA greedy_init','time')],y=tmp_df.loc[:,('(1+1)-EA greedy_init','%opt')])
+    #plt.show()
+
 
 if __name__ == '__main__':
     df = load_table()
     plot_capacity_item_vs_time(df)
+    plot_greedy_optimum_vs_solution(df)
+    #plot_aborted_DP(df)
+    plot_ea_vs_ea_init(df)
