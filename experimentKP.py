@@ -24,6 +24,9 @@ def run():
         executor.map(run_for_file, zip(iglob('data/**.ttp'), repeat(performance_factor)))
     #run_for_file(('data/a280_n279_uncorr-similar-weights_07.ttp', 10))
 
+def __return_bin_vals(self, n, p):
+    number_of_changes = np.random.binomial(n=n, p=p)
+    return np.random.choice(n, number_of_changes, replace=False)
 
 def run_for_file(file_performance_factor):
     file, performance_factor = file_performance_factor
@@ -50,11 +53,12 @@ def run_for_file(file_performance_factor):
 
         test_case = TestCase(optimum, timeout_min, ttsp)
 
-        algorithms = [
-            OnePlusOneEA(ttsp, test_case.copy(), np.zeros(ttsp.item_num, dtype=int), 'zero_init'),
-            OnePlusOneEA(ttsp, test_case.copy(), greedy_assignment, 'greedy_init')
-        ]
+        algorithms = [ ]
+        for p in [2,4,8]:
+            algorithms.append(OnePlusOneEA(ttsp, test_case.copy(), np.zeros(ttsp.item_num, dtype=int), 'zero_init_' + str(p), lambda n: __return_bin_vals(n,p) ))
+            algorithms.append(OnePlusOneEA(ttsp, test_case.copy(), greedy_assignment, 'greedy_init_' + str(p), lambda n: __return_bin_vals(n,p)))
         for algo in algorithms:
+            print(algo.name)
             value, assignment, steps, is_timed_out, elapsed_time = algo.optimize()
             df = append_row(df, optimum, ttsp, algo.name, file, value, assignment, steps,
                             is_timed_out, elapsed_time)
