@@ -8,7 +8,7 @@ import pandas as pd
 from glob import iglob
 
 from TestCase import TestCase
-from knapsack_heuristics import OnePlusOneEA, Greedy, DP, DPMicroOpt, DPNumpy
+from knapsack_heuristics import OnePlusOneEA, Greedy, DPNumpy
 from model import TTSP
 import numpy as np
 
@@ -66,16 +66,16 @@ def run_for_file(file_performance_factor):
                              lambda n: return_bin_vals(n, p)))
         for algo in algorithms:
             print(algo.name)
-            value, assignment, steps, is_timed_out, elapsed_time = algo.optimize()
+            value, assignment, steps, is_timed_out, elapsed_time, result_over_time = algo.optimize()
             df = append_row(df, optimum, ttsp, algo.name, file, value, assignment, steps,
-                            is_timed_out, elapsed_time)
+                            is_timed_out, elapsed_time, result_over_time)
         df.to_csv('results_test/' + file[5:] + '.csv')
     else:
         print('Skipped file ', file)
 
 
 def append_row(df, optimum, ttsp, algo_name, file, value, assignment, steps, is_timed_out,
-               elapsed_time):
+               elapsed_time, result_over_time):
     new_row = {'filename': file,
                'kp_capacity': ttsp.knapsack_capacity,
                'item_number': ttsp.item_num,
@@ -84,7 +84,8 @@ def append_row(df, optimum, ttsp, algo_name, file, value, assignment, steps, is_
                'solution': value,
                'time': elapsed_time,
                'optimal_solution': optimum,
-               'aborted': is_timed_out}
+               'aborted': is_timed_out,
+               'result_over_time': result_over_time}
     print(new_row)
     df = df.append(new_row, ignore_index=True)
     return df

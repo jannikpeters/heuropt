@@ -7,7 +7,7 @@ import pandas as pd
 def load_table():
     df = pd.DataFrame(columns=['filename', 'algorithm', 'iterations', 'solution', 'time',
                                'kp_capacity', 'item_number', 'optimal_solution', 'aborted'])
-    for file in iglob('results/**.csv'):
+    for file in iglob('results_test/**.csv'):
         new_df = pd.read_csv(file)
         df = df.append(new_df, ignore_index=True)
     return df
