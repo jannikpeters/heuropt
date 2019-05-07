@@ -1,3 +1,4 @@
+import ast
 from glob import iglob
 import matplotlib.pyplot as plt
 
@@ -94,7 +95,7 @@ def plot_capacity_item_vs_time(df):
               y_axis='time',
               x_axis='kp_capacity x #items', alpha=0.5, jitter=False, label='nice', marker='o')
 
-def plot_greedy_optimum_vs_solution(df):
+def plot_greedy_optimum_vs_solution(df, p):
     # done
 
     print(df.columns)
@@ -108,12 +109,12 @@ def plot_greedy_optimum_vs_solution(df):
 
     plt.scatter(y=tmp_df['% of optimal_solution'], x=tmp_df['kp_capacity x #items'],label='Greedy')
 
-    tmp_df = df[df.algorithm == '(1+1)-EA zero_init']
+    tmp_df = df[df.algorithm == '(1+1)-EA zero_init_bin_p_'+str(p)]
     tmp_df['% of optimal_solution'] = tmp_df.solution / tmp_df.optimal_solution
 
     plt.scatter(y=tmp_df['% of optimal_solution'], x=tmp_df['kp_capacity x #items'],label='EA',color='red',alpha=0.7)
 
-    tmp_df = df[df.algorithm == '(1+1)-EA greedy_init']
+    tmp_df = df[df.algorithm == '(1+1)-EA greedy_init_bin_p'+str(p)]
     tmp_df['% of optimal_solution'] = tmp_df.solution / tmp_df.optimal_solution
 
     plt.scatter(y=tmp_df['% of optimal_solution'], x=tmp_df['kp_capacity x #items'], label='EA greedy',marker='x',c='black')
@@ -123,7 +124,7 @@ def plot_greedy_optimum_vs_solution(df):
     plt.title('Optimality of EAs and Greedy')
     plt.show()
 
-def plot_aborted_DP(df):
+def plot_aborted_DP(df, p):
     # done
     tmp_df = df[df.algorithm == 'DP_opt']
     tmp_df['kpitems'] = tmp_df.item_number * tmp_df.kp_capacity
@@ -138,35 +139,35 @@ def plot_aborted_DP(df):
     #print('Min: %s' % tmp_df.loc[~tmp_df.aborted,:].kpitems.max())
 
 
-def plot_ea_vs_ea_init(df):
+def plot_ea_vs_ea_init(df,p):
     # done
-    tmp_df = df[df.algorithm.isin(['(1+1)-EA zero_init','(1+1)-EA greedy_init']) & (df.aborted==False)]
+    tmp_df = df[df.algorithm.isin(['(1+1)-EA zero_init_bin_p_'+str(p),'(1+1)-EA greedy_init_bin_p'+str(p)]) & (df.aborted==False)]
     tmp_df.dropna(inplace=True)
     # only works if we know optimal solution!
     tmp_df['%opt'] = tmp_df.solution / tmp_df.optimal_solution
     # only works if we know optimal solution!
     tmp_df = tmp_df.pivot(index='filename',columns='algorithm',values=['time','%opt'])
 
-    tmp_df.loc[:,'time_dif'] = tmp_df.loc[:, ('time', '(1+1)-EA greedy_init')] - tmp_df.loc[:, ('time', '(1+1)-EA zero_init')]
-    tmp_df.loc[:,'%opt_dif'] =  tmp_df.loc[:, ('%opt', '(1+1)-EA greedy_init')] - tmp_df.loc[:, ('%opt', '(1+1)-EA zero_init')]
-    plt.scatter(x=tmp_df.loc[:,('time','(1+1)-EA greedy_init')],y=tmp_df.loc[:,('%opt','(1+1)-EA greedy_init')])
-    plt.scatter(x=tmp_df.loc[:, ('time', '(1+1)-EA zero_init')], y=tmp_df.loc[:, ('%opt', '(1+1)-EA greedy_init')])
+    tmp_df.loc[:,'time_dif'] = tmp_df.loc[:, ('time', '(1+1)-EA greedy_init_bin_p'+str(p))] - tmp_df.loc[:, ('time', '(1+1)-EA zero_init_bin_p_'+str(p))]
+    tmp_df.loc[:,'%opt_dif'] =  tmp_df.loc[:, ('%opt', '(1+1)-EA greedy_init_bin_p'+str(p))] - tmp_df.loc[:, ('%opt', '(1+1)-EA zero_init_bin_p_'+str(p))]
+    plt.scatter(x=tmp_df.loc[:,('time','(1+1)-EA greedy_init_bin_p'+str(p))],y=tmp_df.loc[:,('%opt','(1+1)-EA greedy_init_bin_p'+str(p))])
+    plt.scatter(x=tmp_df.loc[:, ('time', '(1+1)-EA zero_init_bin_p_'+str(p))], y=tmp_df.loc[:, ('%opt', '(1+1)-EA greedy_init_bin_p'+str(p))])
     plt.show()
     tmp_df.plot(x='time_dif',y='%opt_dif',kind='scatter',title='Gain of EA-greedy over EA-zero init')
     plt.show()
 
 
-def plot_ea_init_vs_greeday_solution_no_optimum(df):
-    tmp_df = df[df.algorithm.isin(['(1+1)-EA zero_init', '(1+1)-EA greedy_init']) & (df.aborted == True)]
+def plot_ea_init_vs_greeday_solution_no_optimum(df, p):
+    tmp_df = df[df.algorithm.isin(['(1+1)-EA zero_init_bin_p_'+str(p), '(1+1)-EA greedy_init_bin_p'+str(p)]) & (df.aborted == True)]
     tmp_df.dropna(inplace=True)
     # only works if we know optimal solution!
     # only works if we know optimal solution!
     tmp_df = tmp_df.pivot(index='filename', columns='algorithm', values=['time', 'solution'])
 
-    a = tmp_df.loc[:, ('time', '(1+1)-EA greedy_init')] / tmp_df.loc[:,
-                                                                                  ('time', '(1+1)-EA zero_init')]
-    b = tmp_df.loc[:, ('solution', '(1+1)-EA greedy_init')] / tmp_df.loc[:,
-                                                                                  ('solution', '(1+1)-EA zero_init')]
+    a = tmp_df.loc[:, ('time', '(1+1)-EA greedy_init_bin_p'+str(p))] / tmp_df.loc[:,
+                                                                                  ('time', '(1+1)-EA zero_init_bin_p_'+str(p))]
+    b = tmp_df.loc[:, ('solution', '(1+1)-EA greedy_init_bin_p'+str(p))] / tmp_df.loc[:,
+                                                                                  ('solution', '(1+1)-EA zero_init_bin_p_'+str(p))]
     plt.scatter(x=b, y=a)
     ax = plt.gca()
     ax.set_ylim([0.998,1.002])
@@ -181,8 +182,10 @@ if __name__ == '__main__':
    # oha = df[df.solution > df.optimal_solution]
    # oha
     # for tomorrow ast.literal_eval(x.loc[2]) for the list which is a string from csv
+    df.result_over_time = df['result_over_time'].apply(ast.literal_eval)
+    p = 2
     plot_capacity_item_vs_time(df)
-    plot_greedy_optimum_vs_solution(df)
-    plot_aborted_DP(df)
-    plot_ea_vs_ea_init(df)
-    plot_ea_init_vs_greeday_solution_no_optimum(df)
+    plot_greedy_optimum_vs_solution(df,p)
+    plot_aborted_DP(df,p)
+    plot_ea_vs_ea_init(df,p)
+    plot_ea_init_vs_greeday_solution_no_optimum(df,p)
