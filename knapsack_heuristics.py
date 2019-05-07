@@ -77,6 +77,10 @@ class Greedy():
 
 
 class DPNumpy():
+    """This DP implementation was greatly inspired by:
+    https://medium.freecodecamp.org/if-you-have-slow-loops-in-python-you-can-fix-it-until-you-cant-3a39e03b6f35
+    We implemented a more usual solution but it was simply to slow in pure python."""
+
     def __init__(self, ttsp: TTSP, timeout_min):
         self.ttsp = ttsp
         self.timeout_min = timeout_min
