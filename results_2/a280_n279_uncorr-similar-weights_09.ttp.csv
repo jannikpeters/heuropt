@@ -1,0 +1,7 @@
+,filename,algorithm,iterations,solution,time,kp_capacity,item_number,optimal_solution,aborted,result_over_time
+0,data/a280_n279_uncorr-similar-weights_09.ttp,DP_numpy,0,135556,0.40801262855529785,229304,279,135556,False,[]
+1,data/a280_n279_uncorr-similar-weights_09.ttp,Greedy,0,135556,0.0,229304,279,135556,False,[]
+2,data/a280_n279_uncorr-similar-weights_09.ttp,(1+1)-EA zero_init_bin_p_2,1095736,135556,146.50069618225098,229304,279,135556,False,"[0, 135152, 135389, 135482, 135482, 135497, 135526, 135526, 135534, 135534, 135534, 135534, 135535, 135540, 135540]"
+3,data/a280_n279_uncorr-similar-weights_09.ttp,(1+1)-EA greedy_init_bin_p2,1,135556,3.814697265625e-06,229304,279,135556,False,[135556]
+4,data/a280_n279_uncorr-similar-weights_09.ttp,(1+1)-EA zero_init_bin_p_6,894894,135556,120.58938002586365,229304,279,135556,False,"[0, 134982, 135295, 135439, 135439, 135485, 135529, 135553, 135553, 135553, 135553, 135554, 135554]"
+5,data/a280_n279_uncorr-similar-weights_09.ttp,(1+1)-EA greedy_init_bin_p6,1,135556,3.814697265625e-06,229304,279,135556,False,[135556]
