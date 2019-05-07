@@ -68,12 +68,12 @@ class Greedy():
                 assignment[i] = 1
             else:
                 if value > self.ttsp.item_profit[i]:
-                    return value, assignment, 0, False, 0, []
+                    return value, assignment
                 else:
                     otherAssigment = [0] * self.ttsp.item_num
                     otherAssigment[i] = 1
-                    return self.ttsp.item_profit[i], otherAssigment, 0, False, 0
-        return value, assignment, 0, False, 0, []
+                    return self.ttsp.item_profit[i], otherAssigment
+        return value, assignment
 
 
 class DPNumpy():

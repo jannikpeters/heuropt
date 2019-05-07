@@ -2,6 +2,11 @@ import numpy as np
 
 
 class TTSP:
+
+    def dist(self, first, second):
+        return np.ceil(np.sqrt((self.node_coord[first][0]-self.node_coord[second][0])**2 + (self.node_coord[first][1]-self.node_coord[second][1])**2))
+
+
     def __init__(self, file):
         fp = open(file, 'r')
 
