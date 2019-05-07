@@ -1,5 +1,0 @@
-,filename,algorithm,iterations,solution,time,kp_capacity,item_number,optimal_solution,aborted
-0,data/a280_n837_bounded-strongly-corr_03.ttp,DP_opt,0,295899.0,600.4038128852844,222399,837,,True
-1,data/a280_n837_bounded-strongly-corr_03.ttp,Greedy,0,306006.0,0.0,222399,837,,False
-2,data/a280_n837_bounded-strongly-corr_03.ttp,(1+1)-EA zero_init,13745093,305299.0,600.0000159740448,222399,837,,True
-3,data/a280_n837_bounded-strongly-corr_03.ttp,(1+1)-EA greedy_init,14943382,306199.0,600.0000343322754,222399,837,,True
