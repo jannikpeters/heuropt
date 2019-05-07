@@ -181,7 +181,7 @@ def plot_ea_init_vs_greedy_solution_no_optimum(df, p):
     plt.show()
 
 
-def plot_results_over_time(df: DataFrame, p):
+def plot_results_over_time(df: DataFrame):
     plt.figure(figsize=(5, 15))
     plt.xlabel('seconds')
     plt.ylabel('Knapsack Value')
@@ -199,7 +199,6 @@ def plot_results_over_time(df: DataFrame, p):
         plt.scatter(x=x, y=y, marker='.', c='red', s=10)
     plt.title('Zero init in blue and greedy init in red')
     plt.show()
-    #df.plot(x=[10*i for i in range(0,61)], y='results_over_time')
 
 if __name__ == '__main__':
     df = load_table()
@@ -207,11 +206,11 @@ if __name__ == '__main__':
     # oha
     # for tomorrow ast.literal_eval(x.loc[2]) for the list which is a string from csv
     df.result_over_time = df['result_over_time'].apply(ast.literal_eval)
-    plot_results_over_time(df, 2)
-    #
-    # p = 2
-    # plot_capacity_item_vs_time(df)
-    # plot_greedy_optimum_vs_solution(df,p)
-    # plot_aborted_DP(df,p)
-    # #plot_ea_vs_ea_init(df,p)
-    # plot_ea_init_vs_greedy_solution_no_optimum(df, p)
+    plot_results_over_time(df)
+
+    p = 2
+    plot_capacity_item_vs_time(df)
+    plot_greedy_optimum_vs_solution(df,p)
+    plot_aborted_DP(df,p)
+    #plot_ea_vs_ea_init(df,p)
+    plot_ea_init_vs_greedy_solution_no_optimum(df, p)
