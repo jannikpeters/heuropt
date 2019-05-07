@@ -17,7 +17,7 @@ def run():
     performance_factor = 10
     if os.cpu_count() < 5:
         print('ATTENTION you have a slow pc, thus the problem size has been reduced')
-        performance_factor = 1
+        performance_factor = 10
     # with Pool() as p:
     #     p.map(run_for_file, zip(iglob('data/**.ttp'), repeat(performance_factor)))
     # with ProcessPoolExecutor() as executor:
@@ -45,6 +45,7 @@ def run_for_file(file_performance_factor):
         dp_res, bin_str, steps, is_aborted, run_time, intermed_vals = DPNumpy(ttsp,
                                                                               timeout_min).optimize()
     except MemoryError as m:
+        print('Memory Error')
         print(m, 'for file', file)
         is_aborted = True
         dp_res, bin_str, steps, run_time, intermed_vals = (None,)*5
