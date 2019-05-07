@@ -35,7 +35,7 @@ class TTSP:
         for i in range(self.dim):
             line = fp.readline()
             temp = line.split('\t')
-            self.node_coord[i] = (float(temp[1]), float(temp[2]))
+            self.node_coord[i] = (int(temp[1]), int(temp[2]))
 
         # read items
         line = fp.readline()
