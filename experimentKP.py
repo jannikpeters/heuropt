@@ -44,9 +44,8 @@ def run_for_file(file_performance_factor):
     try:
         dp_res, bin_str, steps, is_aborted, run_time, intermed_vals = DPNumpy(ttsp,
                                                                               timeout_min).optimize()
-    except MemoryError as m:
-        print('Memory Error')
-        print(m, 'for file', file)
+    except MemoryError:
+        print('Memory Error for', file)
         is_aborted = True
         dp_res, bin_str, steps, run_time, intermed_vals = (None,)*5
 
