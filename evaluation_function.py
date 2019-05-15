@@ -10,7 +10,6 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
     cost = 0
     current_weight = 0
     for i in range(n):
-
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
         current_weight += weight_at(city_i, packing_bitstring, ttsp)
@@ -41,8 +40,3 @@ def t(city_i, city_j, bitstring: np.ndarray, ttsp: TTSP, current_weight):
 def weight_at(city_i, bitstring, ttsp:TTSP):
     return sum(ttsp.item_weight[i] * bitstring[i] * 1 if ttsp.item_node[i] == city_i \
                              else 0 for i in range(len(bitstring)))
-def Wpi(city_i: int, bitstring: np.ndarray, ttsp: TTSP):
-    # Todo: check for correctness and performance
-    current_weight = sum(ttsp.item_weight[i] * bitstring[i] * 1 if ttsp.item_node[i] <= city_i \
-                             else 0 for i in range(len(bitstring)))
-    return current_weight

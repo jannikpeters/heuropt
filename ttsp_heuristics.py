@@ -25,3 +25,5 @@ class NeighrestNeighbors:
             permutation.append(min_ele)
         print(len(permutation))
         return permutation
+
+

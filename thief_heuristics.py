@@ -4,6 +4,7 @@ from knapsack_heuristics import Greedy
 from model import TTSP
 from ttsp_heuristics import NeighrestNeighbors
 from evaluation_function import profit
+import ast
 
 
 def print_sol(ttsp_permutation, knapsack_assigment):
@@ -26,7 +27,20 @@ def run():
         print(profit(ttsp_permutation[::-1], knapsack_assignment, ttsp))
 
 
+def read_from_file():
+    ttsp = TTSP('gecc/fnl4461_n4460_bounded-strongly-corr_01.ttp')
+    fp = open('solutions/fnl4461_n4460.txt', 'r')
+    ttsp_permutation = fp.readline()
+    ttsp_permutation = ast.literal_eval(ttsp_permutation)
+    ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+    knapsack = fp.readline()
+    knapsack = ast.literal_eval(knapsack)
+    knapsack[:] = [x - 1 for x in knapsack]
+    knapsack_assignment = [0]*ttsp.item_num
+    for item in knapsack:
+        knapsack_assignment[item] = 1
+    print(profit(ttsp_permutation, knapsack_assignment, ttsp))
 
 
 if __name__ == '__main__':
-    run()
+    read_from_file()
