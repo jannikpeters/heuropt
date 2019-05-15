@@ -4,7 +4,6 @@ from model import TTSP
 
 
 def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
-    print('WARNING function has not been tested')
     R = ttsp.renting_ratio
     n = len(tour)
     cost = 0

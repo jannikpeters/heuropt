@@ -30,15 +30,17 @@ def run():
 
 
 def read_from_file():
-    ttsp = TTSP('gecc/fnl4461_n4460_bounded-strongly-corr_01.ttp')
-    fp = open('solutions/fnl4461_n4460.txt', 'r')
+    file = 'gecc/pla33810_n338090.ttp'
+    solution_file = 'solutions/'+ file.split('/')[1].split('.')[0] +'.txt'
+    ttsp = TTSP(file)
+    fp = open(solution_file, 'r')
     ttsp_permutation = fp.readline()
     ttsp_permutation = ast.literal_eval(ttsp_permutation)
     ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
     knapsack = fp.readline()
     knapsack = ast.literal_eval(knapsack)
     knapsack[:] = [x - 1 for x in knapsack]
-    knapsack_assignment = np.zeros(ttsp.item_num)
+    knapsack_assignment = np.zeros(ttsp.item_num, dtype = np.bool)
     for item in knapsack:
         knapsack_assignment[item] = 1
     print(profit(ttsp_permutation, knapsack_assignment, ttsp))
