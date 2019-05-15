@@ -56,13 +56,13 @@ class greedy_ttsp:
                 assignment[i] = 1
                 count += 1
                 #print(profit(self.ttsp_permutation, assignment, self.ttsp))
-                if count % 5000 == 0:
+                if count % 100 == 0:
                     current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
                     print('c', current_profit, max_val)
                     if current_profit < max_val:
-                        return self.ttsp_permutation, best_assignment, current_profit
+                        return best_assignment
                     else:
                         best_assignment = assignment.copy()
                         max_val = current_profit
-        return self.ttsp_permutation, best_assignment, current_profit
+        return best_assignment
 
