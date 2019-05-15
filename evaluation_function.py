@@ -18,12 +18,8 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
 
 
 def knapsack_value(assignment, ttspModel):
-    weight = 0
-    value = 0
-    for i in range(ttspModel.item_num):
-        value += assignment[i] * ttspModel.item_profit[i]
-        weight += assignment[i] * ttspModel.item_weight[i]
-    # Todo: What makes sense here as a return for illegal values
+    value = np.multiply(assignment, ttspModel.item_profit).sum()
+    weight = np.multiply(assignment, ttspModel.item_weight).sum()
     if weight > ttspModel.knapsack_capacity:
         return np.nan
     else:
