@@ -61,11 +61,11 @@ def weight_at(city_i, bitstring, ttsp: TTSP):
     return int_res
 
 
-def added_weight_at(city_i, bit_string, ttsp):
+def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP):
     indexes_items_in_city = np.where(ttsp.item_node == city_i)[0]
     if len(indexes_items_in_city) == 0:
         return 0
     is_taken = bit_string[indexes_items_in_city]
     weights = ttsp.item_weight[indexes_items_in_city]
-    res = np.multiply(is_taken, weights).sum()
+    res = np.multiply(is_taken, weights).sum(dtype=np.int)
     return res
