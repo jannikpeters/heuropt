@@ -4,7 +4,7 @@ import numpy as np
 class TTSP:
 
     def dist(self, first, second):
-        return np.ceil(np.sqrt((self.node_coord[first][0]-self.node_coord[second][0])**2 + (self.node_coord[first][1]-self.node_coord[second][1])**2))
+        return np.ceil(np.sqrt((self.node_coord[first,0]-self.node_coord[second,0])**2 + (self.node_coord[first,1]-self.node_coord[second,1])**2))
 
 
     def __init__(self, file):
@@ -31,11 +31,12 @@ class TTSP:
 
         # read node coords
         line = fp.readline()
-        self.node_coord = [(0.0, 0.0)] * self.dim
+        self.node_coord = np.zeros((self.dim,2))
         for i in range(self.dim):
             line = fp.readline()
             temp = line.split('\t')
-            self.node_coord[i] = (int(temp[1]), int(temp[2]))
+            self.node_coord[i,0] = int(temp[1])
+            self.node_coord[i,1] = int(temp[2])
 
         # read items
         line = fp.readline()

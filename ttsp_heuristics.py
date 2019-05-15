@@ -1,6 +1,7 @@
 from model import TTSP
 from evaluation_function import profit, dist_to_opt
 import numpy as np
+from random import randint
 class NeighrestNeighbors:
     def __init__(self, ttsp:TTSP):
         self.ttsp = ttsp
@@ -46,9 +47,22 @@ class greedy_ttsp:
         #print(actual_profit)
         weight = 0
         assignment = np.zeros(self.ttsp.item_num)
+        best_assignment = np.zeros(self.ttsp.item_num)
+        count = 0
+        max_val = profit(self.ttsp_permutation, assignment, self.ttsp)
         for (val, i) in reversed(actual_profit):
             if weight + self.ttsp.item_weight[i] <= self.ttsp.knapsack_capacity and val > 0:
                 weight += self.ttsp.item_weight[i]
                 assignment[i] = 1
-        return assignment
+                count += 1
+                #print(profit(self.ttsp_permutation, assignment, self.ttsp))
+                if count % 5000 == 0:
+                    current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
+                    print('c', current_profit, max_val)
+                    if current_profit < max_val:
+                        return self.ttsp_permutation, best_assignment, current_profit
+                    else:
+                        best_assignment = assignment.copy()
+                        max_val = current_profit
+        return self.ttsp_permutation, best_assignment, current_profit
 
