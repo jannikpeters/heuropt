@@ -17,7 +17,29 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
         cost += tij
     return knapsack_value(packing_bitstring, ttsp) - R * cost
 
+def total_distance(tour:np.ndarray, ttsp:TTSP):
+    n = len(tour)
+    cost = 0
+    for i in range(n):
+        city_i = tour[i % n]
+        city_ip1 = tour[(i + 1) % n]
+        tij = t(city_i, city_ip1, [], ttsp, 0)
+        cost += tij
+    return cost
 
+def dist_to_opt(tour:np.ndarray, ttsp:TTSP):
+    total_dist = total_distance(tour, ttsp)
+    n = len(tour)
+    dist_to_end = [0]*n
+    cost = 0
+    for i in range(n):
+        city_i = tour[i % n]
+        city_ip1 = tour[(i + 1) % n]
+        tij = t(city_i, city_ip1, [], ttsp, 0)
+        cost += tij
+        dist_to_end[city_ip1] = total_dist - cost
+    dist_to_end[tour[0]] = total_dist
+    return dist_to_end
 def knapsack_value(assignment, ttspModel):
     weight = 0
     value = 0
