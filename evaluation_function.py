@@ -22,7 +22,7 @@ def total_distance(tour:np.ndarray, ttsp:TTSP):
     for i in range(n):
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
-        tij = t(city_i, city_ip1, [], ttsp, 0)
+        tij = t(city_i, city_ip1, ttsp, 0)
         cost += tij
     return cost
 
@@ -34,7 +34,7 @@ def dist_to_opt(tour:np.ndarray, ttsp:TTSP):
     for i in range(n):
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
-        tij = t(city_i, city_ip1, [], ttsp, 0)
+        tij = t(city_i, city_ip1, ttsp, 0)
         cost += tij
         dist_to_end[city_ip1] = total_dist - cost
     dist_to_end[tour[0]] = total_dist

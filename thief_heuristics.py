@@ -63,8 +63,6 @@ def read_from_file():
         if weight + ttsp.item_weight[i] <= ttsp.knapsack_capacity and val > 0:
             weight += ttsp.item_weight[i]
             assignment[i] = 1
-        else:
-            break
     print_sol(ttsp_permutation, assignment)
     print(profit(ttsp_permutation, assignment, ttsp))
     knapsack = fp.readline()
