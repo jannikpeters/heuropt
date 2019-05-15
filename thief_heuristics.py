@@ -63,8 +63,9 @@ def run_greedy(file):
     ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
     knapsack_assignment = greedy_ttsp( ttsp, ttsp_permutation).optimize()
     print(profit(ttsp_permutation, knapsack_assignment, ttsp))
+    print_sol(ttsp_permutation, knapsack_assignment)
 if __name__ == '__main__':
-    read_from_file()
+    #read_from_file()
     file = 'gecc/pla33810_n338090.ttp'
     run_greedy(file)
     #print(timeit.timeit(read_from_file, number=3))
