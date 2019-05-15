@@ -58,7 +58,7 @@ def read_from_file():
     actual_profit.sort()
     print(actual_profit)
     weight = 0
-    assignment = [0]*ttsp.item_num
+    assignment = np.zeros(ttsp.item_num)
     for (val, i) in reversed(actual_profit):
         if weight + ttsp.item_weight[i] <= ttsp.knapsack_capacity and val > 0:
             weight += ttsp.item_weight[i]

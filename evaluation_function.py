@@ -39,6 +39,7 @@ def dist_to_opt(tour:np.ndarray, ttsp:TTSP):
         dist_to_end[city_ip1] = total_dist - cost
     dist_to_end[tour[0]] = total_dist
     return dist_to_end
+
 def knapsack_value(assignment, ttspModel):
     value = np.multiply(assignment, ttspModel.item_profit).sum()
     weight = np.multiply(assignment, ttspModel.item_weight).sum()
