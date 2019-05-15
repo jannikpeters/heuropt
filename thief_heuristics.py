@@ -41,22 +41,6 @@ def run():
         print(profit(ttsp_permutation[::-1], knapsack_assignment, ttsp))
 
 
-def read_from_file():
-    file = 'gecc/pla33810_n338090.ttp'
-    solution_file = 'solutions/'+ file.split('/')[1].split('.')[0] +'.txt'
-    ttsp = TTSP(file)
-    fp = open(solution_file, 'r')
-    ttsp_permutation = fp.readline()
-    ttsp_permutation = ast.literal_eval(ttsp_permutation)
-    ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
-    knapsack = fp.readline()
-    knapsack = ast.literal_eval(knapsack)
-    knapsack[:] = [x - 1 for x in knapsack]
-    knapsack_assignment = np.zeros(ttsp.item_num, dtype = np.bool)
-    for item in knapsack:
-        knapsack_assignment[item] = 1
-    print(profit(ttsp_permutation, knapsack_assignment, ttsp))
-
 def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray):
     knapsack_assignment = greedy_ttsp( ttsp, ttsp_permutation).optimize()
     p = profit(ttsp_permutation, knapsack_assignment, ttsp)
