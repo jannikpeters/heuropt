@@ -5,6 +5,8 @@ from model import TTSP
 from ttsp_heuristics import NeighrestNeighbors
 from evaluation_function import profit
 import ast
+import numpy as np
+import timeit
 
 
 def print_sol(ttsp_permutation, knapsack_assigment):
@@ -36,7 +38,7 @@ def read_from_file():
     knapsack = fp.readline()
     knapsack = ast.literal_eval(knapsack)
     knapsack[:] = [x - 1 for x in knapsack]
-    knapsack_assignment = [0]*ttsp.item_num
+    knapsack_assignment = np.zeros(ttsp.item_num)
     for item in knapsack:
         knapsack_assignment[item] = 1
     print(profit(ttsp_permutation, knapsack_assignment, ttsp))
@@ -44,3 +46,4 @@ def read_from_file():
 
 if __name__ == '__main__':
     read_from_file()
+    #print(timeit.timeit(read_from_file, number=3))
