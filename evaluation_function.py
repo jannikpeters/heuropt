@@ -4,7 +4,6 @@ from model import TTSP
 
 
 def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
-    print('WARNING function has not been tested')
     R = ttsp.renting_ratio
     n = len(tour)
     cost = 0
@@ -13,7 +12,7 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
         current_weight += weight_at(city_i, packing_bitstring, ttsp)
-        tij = t(city_i, city_ip1, packing_bitstring, ttsp, current_weight)
+        tij = t(city_i, city_ip1, ttsp, current_weight)
         cost += tij
     return knapsack_value(packing_bitstring, ttsp) - R * cost
 
@@ -53,12 +52,14 @@ def knapsack_value(assignment, ttspModel):
         return value
 
 
-def t(city_i, city_j, bitstring: np.ndarray, ttsp: TTSP, current_weight):
+def t(city_i, city_j, ttsp: TTSP, current_weight):
     tij = ttsp.dist(city_i, city_j) / (ttsp.max_speed - current_weight * (
             (ttsp.max_speed - ttsp.min_speed) / ttsp.knapsack_capacity))
     return tij
 
 
-def weight_at(city_i, bitstring, ttsp:TTSP):
-    return sum(ttsp.item_weight[i] * bitstring[i] * 1 if ttsp.item_node[i] == city_i \
-                             else 0 for i in range(len(bitstring)))
+def weight_at(city_i, bitstring, ttsp: TTSP):
+    weights = np.multiply(ttsp.item_weight, bitstring)
+    in_city = ttsp.item_node == city_i
+    int_res = np.multiply(weights, in_city).sum(dtype = np.int)
+    return int_res

@@ -5,6 +5,8 @@ from model import TTSP
 from ttsp_heuristics import NeighrestNeighbors
 from evaluation_function import profit, dist_to_opt
 import ast
+import numpy as np
+import timeit
 
 def positional_array(ttsp_permutation):
     pos = [0]*len(ttsp_permutation)
@@ -37,8 +39,10 @@ def run():
 
 
 def read_from_file():
-    ttsp = TTSP('gecc/fnl4461_n44600_uncorr_10.ttp')
-    fp = open('solutions/fnl4461_n44600.txt', 'r')
+    file = 'gecc/pla33810_n33809.ttp'
+    solution_file = 'solutions/'+ file.split('/')[1].split('.')[0] +'.txt'
+    ttsp = TTSP(file)
+    fp = open(solution_file, 'r')
     ttsp_permutation = fp.readline()
     ttsp_permutation = ast.literal_eval(ttsp_permutation)
     ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
@@ -66,7 +70,7 @@ def read_from_file():
     knapsack = fp.readline()
     knapsack = ast.literal_eval(knapsack)
     knapsack[:] = [x - 1 for x in knapsack]
-    knapsack_assignment = [0]*ttsp.item_num
+    knapsack_assignment = np.zeros(ttsp.item_num, dtype = np.bool)
     for item in knapsack:
         knapsack_assignment[item] = 1
     print(profit(ttsp_permutation, knapsack_assignment, ttsp))
@@ -74,3 +78,4 @@ def read_from_file():
 
 if __name__ == '__main__':
     read_from_file()
+    #print(timeit.timeit(read_from_file, number=3))
