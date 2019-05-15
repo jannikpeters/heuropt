@@ -62,7 +62,7 @@ def weight_at(city_i, bitstring, ttsp: TTSP):
 
 
 def added_weight_at(city_i, bit_string, ttsp):
-    indexes_items_in_city = np.where(ttsp.item_node == city_i)
+    indexes_items_in_city = np.where(ttsp.item_node == city_i)[0]
     if len(indexes_items_in_city) == 0:
         return 0
     is_taken = bit_string[indexes_items_in_city]
