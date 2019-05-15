@@ -2,6 +2,48 @@ import numpy as np
 
 from model import TTSP
 
+class Profit:
+    def __init__(self, ttp: TTSP):
+        self.ttp = ttp
+        self.cost_at_route = np.zeros(ttp.dim)
+        self.weight_at_route = np.zeros(ttp.dim)
+
+    def update_cost_and_weight(self, route_index: int, tour: np.ndarray,
+                               packing_bitstring:np.ndarray):
+        cost = tour[route_index - 1]
+        current_weight = tour[route_index - 1]
+        route_length = len(tour)
+        for i in range(route_length):
+            city_i = tour[i % route_length]
+            city_ip1 = tour[(i + 1) % route_length]
+            current_weight += self.weight_added_at_city()
+            self.weight_at_route[i] = current_weight
+            tij = t(city_i, city_ip1, self.ttp, current_weight)
+            cost += tij
+            self.cost_at_route[i] = cost
+        return cost
+
+    def weight_added_at_city(self, item_indexes: np.ndarray):
+        return self.ttp.item_weight[item_indexes].sum()
+
+    def complete_profit(self, tour: np.ndarray, packing_bitstring: np.ndarray):
+        R = self.ttp.renting_ratio
+        route_length = len(tour)
+        cost = 0
+        current_weight = 0
+        for i in range(route_length):
+            city_i = tour[i % route_length]
+            city_ip1 = tour[(i + 1) % route_length]
+            current_weight += added_weight_at(city_i, packing_bitstring, self.ttp)
+            self.weight_at_route[i] = current_weight
+            tij = t(city_i, city_ip1, self.ttp, current_weight)
+            cost += tij
+            self.cost_at_route[i] = cost
+        return knapsack_value(packing_bitstring, self.ttp) - R * cost
+
+    def add_item_in(route_index: int, item_index: int, ttsp:TTSP):
+        pass
+
 
 def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
     R = ttsp.renting_ratio
@@ -15,6 +57,7 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
         tij = t(city_i, city_ip1, ttsp, current_weight)
         cost += tij
     return knapsack_value(packing_bitstring, ttsp) - R * cost
+
 
 def total_distance(tour:np.ndarray, ttsp:TTSP):
     n = len(tour)
@@ -63,10 +106,17 @@ def weight_at(city_i, bitstring, ttsp: TTSP):
 
 
 def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP):
-    indexes_items_in_city = np.where(ttsp.item_node == city_i)[0]
+    indexes_items_in_city = ttsp.indexes_items_in_city[city_i]
     if len(indexes_items_in_city) == 0:
         return 0
     is_taken = bit_string[indexes_items_in_city]
     weights = ttsp.item_weight[indexes_items_in_city]
     res = np.multiply(is_taken, weights).sum(dtype=np.int)
     return res
+
+# item add in city
+# item remove in city
+# city swap
+# city insert
+def change_item_add_in(city_index: int, item_index: int, ttsp:TTSP):
+    pass

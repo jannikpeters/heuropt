@@ -71,9 +71,9 @@ def read_init_solution_for(problem_name):
 
 
 if __name__ == '__main__':
-    problem = 'pla33810_n33809'
+    problem = 'pla33810_n338090'
     ttsp, knapsack_bitstring, ttsp_permutation = read_init_solution_for(problem)
     print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
-    route, knapsack, prof = run_greedy(ttsp, ttsp_permutation)
-    save_result(route,knapsack,problem, prof)
+   # route, knapsack, prof = run_greedy(ttsp, ttsp_permutation)
+    #save_result(route,knapsack,problem, prof)
     #print(timeit.timeit(read_from_file, number=3))
