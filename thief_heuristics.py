@@ -30,7 +30,7 @@ def run():
 
 
 def read_from_file():
-    file = 'gecc/pla33810_n338090.ttp'
+    file = 'gecc/pla33810_n33809.ttp'
     solution_file = 'solutions/'+ file.split('/')[1].split('.')[0] +'.txt'
     ttsp = TTSP(file)
     fp = open(solution_file, 'r')
