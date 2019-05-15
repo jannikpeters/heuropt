@@ -11,7 +11,7 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
     for i in range(n):
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
-        current_weight += weight_at(city_i, packing_bitstring, ttsp)
+        current_weight += added_weight_at(city_i, packing_bitstring, ttsp)
         tij = t(city_i, city_ip1, ttsp, current_weight)
         cost += tij
     return knapsack_value(packing_bitstring, ttsp) - R * cost
@@ -39,5 +39,13 @@ def t(city_i, city_j, ttsp: TTSP, current_weight):
 def weight_at(city_i, bitstring, ttsp: TTSP):
     weights = np.multiply(ttsp.item_weight, bitstring)
     in_city = ttsp.item_node == city_i
-    int_res = np.multiply(weights, in_city).sum(dtype = np.int)
+    int_res = np.multiply(weights, in_city).sum(dtype=np.int)
     return int_res
+
+
+def added_weight_at(city_i, bit_string, ttsp):
+    indexes_items_in_city = np.where(ttsp.item_node == city_i)
+    is_taken = bit_string[indexes_items_in_city]
+    weights = ttsp.item_weight[indexes_items_in_city]
+    res = np.multiply(is_taken, weights).sum()
+    return res
