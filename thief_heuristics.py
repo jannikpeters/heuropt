@@ -2,7 +2,7 @@ from glob import iglob
 
 from knapsack_heuristics import Greedy
 from model import TTSP
-from ttsp_heuristics import NeighrestNeighbors
+from ttsp_heuristics import NeighrestNeighbors, greedy_ttsp
 from evaluation_function import profit, dist_to_opt
 import ast
 import numpy as np
@@ -39,32 +39,13 @@ def run():
 
 
 def read_from_file():
-    file = 'gecc/pla33810_n33809.ttp'
+    file = 'gecc/pla33810_n338090.ttp'
     solution_file = 'solutions/'+ file.split('/')[1].split('.')[0] +'.txt'
     ttsp = TTSP(file)
     fp = open(solution_file, 'r')
     ttsp_permutation = fp.readline()
     ttsp_permutation = ast.literal_eval(ttsp_permutation)
     ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
-    pos_arr = positional_array(ttsp_permutation)
-    print(ttsp_permutation)
-    dist = dist_to_opt(ttsp_permutation, ttsp)
-    print(dist)
-    actual_profit = [0]*ttsp.item_num
-    for item in range(ttsp.item_num):
-        speed_loss = -ttsp.renting_ratio/(ttsp.max_speed - ttsp.item_weight[item] * ((ttsp.max_speed - ttsp.min_speed) / ttsp.knapsack_capacity))
-        actual_profit[item] = ((ttsp.item_profit[item] + (dist[ttsp.item_node[item]]
-                              * speed_loss) + ttsp.renting_ratio * dist[ttsp.item_node[item]])/ttsp.item_weight[item] , item)
-    actual_profit.sort()
-    print(actual_profit)
-    weight = 0
-    assignment = [0]*ttsp.item_num
-    for (val, i) in reversed(actual_profit):
-        if weight + ttsp.item_weight[i] <= ttsp.knapsack_capacity and val > 0:
-            weight += ttsp.item_weight[i]
-            assignment[i] = 1
-    print_sol(ttsp_permutation, assignment)
-    print(profit(ttsp_permutation, assignment, ttsp))
     knapsack = fp.readline()
     knapsack = ast.literal_eval(knapsack)
     knapsack[:] = [x - 1 for x in knapsack]
@@ -73,7 +54,17 @@ def read_from_file():
         knapsack_assignment[item] = 1
     print(profit(ttsp_permutation, knapsack_assignment, ttsp))
 
-
+def run_greedy(file):
+    solution_file = 'solutions/' + file.split('/')[1].split('.')[0] + '.txt'
+    ttsp = TTSP(file)
+    fp = open(solution_file, 'r')
+    ttsp_permutation = fp.readline()
+    ttsp_permutation = ast.literal_eval(ttsp_permutation)
+    ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+    knapsack_assignment = greedy_ttsp( ttsp, ttsp_permutation).optimize()
+    print(profit(ttsp_permutation, knapsack_assignment, ttsp))
 if __name__ == '__main__':
     read_from_file()
+    file = 'gecc/pla33810_n338090.ttp'
+    run_greedy(file)
     #print(timeit.timeit(read_from_file, number=3))
