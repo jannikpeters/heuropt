@@ -79,7 +79,6 @@ class TTSP:
         else:
             self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32))
             np.save(dist_cache_name, self.dist_cache)
-
         self.normalizing_constant = (self.max_speed - self.min_speed) / self.knapsack_capacity
 
 

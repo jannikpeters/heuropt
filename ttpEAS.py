@@ -2,7 +2,7 @@ from TestCase import TestCase
 from model import TTSP
 import numpy as np
 
-
+# TODO: Implement ;)
 class OnePlusOneEA():
 
     def __init__(self, ttspModel: TTSP, test_case: TestCase, initial_x: np.ndarray,

@@ -34,6 +34,7 @@ class greedy_ttsp:
         self.ttsp_permutation = ttsp_permutation
 
     def optimize(self):
+        #Todo: Please use Numpy functions here
         dist = dist_to_opt(self.ttsp_permutation, self.ttsp)
         #print(dist)
         actual_profit = [0] * self.ttsp.item_num
