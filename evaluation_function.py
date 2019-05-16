@@ -93,8 +93,7 @@ def knapsack_value(assignment, ttspModel):
 
 
 def t(city_i, city_j, ttsp: TTSP, current_weight):
-    tij = ttsp.dist(city_i, city_j) / (ttsp.max_speed - current_weight * (
-            (ttsp.max_speed - ttsp.min_speed) / ttsp.knapsack_capacity))
+    tij = ttsp.dist(city_i, city_j) / (ttsp.max_speed - current_weight * ttsp.normalizing_constant)
     return tij
 
 

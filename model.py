@@ -1,13 +1,20 @@
+import os
 from functools import lru_cache
-
 import numpy as np
-
+from scipy.spatial.distance import pdist, squareform
 
 class TTSP:
 
-    @lru_cache()
     def dist(self, first, second):
-        return np.ceil(np.sqrt((self.node_coord[first,0]-self.node_coord[second,0])**2 + (self.node_coord[first,1]-self.node_coord[second,1])**2))
+        return self.dist_cache[first, second]
+
+    @lru_cache()
+    def old_dist(self, first, second):
+        """Deprecated: Only here for historic reason. Slow!!!"""
+        man = np.ceil(np.sqrt((self.node_coord[first, 0] - self.node_coord[second, 0]) ** 2 + (
+                self.node_coord[first, 1] - self.node_coord[second, 1]) ** 2))
+        return man
+
 
 
     def __init__(self, file):
@@ -55,8 +62,24 @@ class TTSP:
             self.item_node[i] = int(temp[3])-1
 
         # Additional for faster computation
-        self.indexes_items_in_city = np.array([np.where(self.item_node == city_i)[0] for city_i in \
-                range(self.dim)])
+        index_cache_name = 'pickles/'+file.split('/')[1]+'_index'
+        if os.path.isfile(index_cache_name+'.npy') and False:
+            print('Loading ', index_cache_name, 'from cache')
+            self.indexes_items_in_city = np.load(index_cache_name+'.npy')
+        else:
+            self.indexes_items_in_city = \
+                np.array([np.where(self.item_node == city_i)[0] for city_i in range(self.dim)])
+            np.save(index_cache_name, self.indexes_items_in_city)
+
+        dist_cache_name = 'pickles/'+file.split('/')[1]+'_dist'
+        if os.path.isfile(dist_cache_name+'.npy'):
+            print('Loading ', dist_cache_name, 'from Cache')
+            self.dist_cache = np.load(dist_cache_name+'.npy')
+        else:
+            self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32))
+            np.save(dist_cache_name, self.dist_cache)
+
+        self.normalizing_constant = (self.max_speed - self.min_speed) / self.knapsack_capacity
 
 
 
