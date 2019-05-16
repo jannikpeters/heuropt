@@ -63,17 +63,18 @@ class TTSP:
 
         # Additional for faster computation
         index_cache_name = 'pickles/'+file.split('/')[1]+'_index'
-        if os.path.isfile(index_cache_name+'.npy') and False:
-            print('Loading ', index_cache_name, 'from cache')
-            self.indexes_items_in_city = np.load(index_cache_name+'.npy')
+        if os.path.isfile(index_cache_name+'.npy'):
+            print('Loading', index_cache_name, 'from Cache')
+            self.indexes_items_in_city = np.load(index_cache_name+'.npy', allow_pickle=True)
         else:
             self.indexes_items_in_city = \
                 np.array([np.where(self.item_node == city_i)[0] for city_i in range(self.dim)])
-            np.save(index_cache_name, self.indexes_items_in_city)
+            np.save(index_cache_name, self.indexes_items_in_city, allow_pickle=True) # we must
+            # allow pickle due to nested arrays
 
         dist_cache_name = 'pickles/'+file.split('/')[1]+'_dist'
         if os.path.isfile(dist_cache_name+'.npy'):
-            print('Loading ', dist_cache_name, 'from Cache')
+            print('Loading', dist_cache_name, 'from Cache')
             self.dist_cache = np.load(dist_cache_name+'.npy')
         else:
             self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32))
