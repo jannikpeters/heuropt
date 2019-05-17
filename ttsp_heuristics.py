@@ -1,3 +1,5 @@
+import math
+
 from model import TTSP
 from evaluation_function import profit, dist_to_opt
 import numpy as np
@@ -33,18 +35,19 @@ class greedy_ttsp:
         self.ttsp = ttsp
         self.ttsp_permutation = ttsp_permutation
 
-    def optimize(self):
+    def optimize(self, factor, coefficient):
         dist = dist_to_opt(self.ttsp_permutation, self.ttsp)
         #print(dist)
         actual_profit = [0] * self.ttsp.item_num
         for item in range(self.ttsp.item_num):
-            speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] * (
+            speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item]  *(
                         (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity))
-            actual_profit[item] = ((self.ttsp.item_profit[item] + (dist[self.ttsp.item_node[item]]
+            actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
                                                               * speed_loss) + self.ttsp.renting_ratio * dist[
-                                        self.ttsp.item_node[item]]) / self.ttsp.item_weight[item], item)
+                                        self.ttsp.item_node[item]])) / self.ttsp.item_weight[item], item)
         actual_profit.sort()
         #print(actual_profit)
+        print(actual_profit)
         weight = 0
         assignment = np.zeros(self.ttsp.item_num)
         best_assignment = np.zeros(self.ttsp.item_num)
@@ -56,13 +59,13 @@ class greedy_ttsp:
                 assignment[i] = 1
                 count += 1
                 #print(profit(self.ttsp_permutation, assignment, self.ttsp))
-                if count % 100 == 0:
+                if count % factor == 0:
                     current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
                     print('c', current_profit, max_val)
                     if current_profit < max_val:
                         return best_assignment
                     else:
-                        best_assignment = assignment.copy()
-                        max_val = current_profit
+                       best_assignment = assignment.copy()
+                       max_val = current_profit
         return best_assignment
 

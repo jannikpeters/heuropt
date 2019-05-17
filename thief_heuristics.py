@@ -41,13 +41,13 @@ def run():
         print(profit(ttsp_permutation[::-1], knapsack_assignment, ttsp))
 
 
-def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray):
-    knapsack_assignment = greedy_ttsp( ttsp, ttsp_permutation).optimize()
+def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
+    knapsack_assignment = greedy_ttsp( ttsp, ttsp_permutation).optimize(factor, coeff)
     p = profit(ttsp_permutation, knapsack_assignment, ttsp)
     return ttsp_permutation, knapsack_assignment, p
 
-def save_result(route: np, knapsack, filename, profit):
-    with open('gecco_solutions/'+filename+'_p'+str(int(round(profit))), 'w') as f:
+def save_result(route: np, knapsack, filename, profit, fact):
+    with open('gecco_solutions/'+filename+'_p'+str(int(round(profit))) + '_c' + str(fact), 'w') as f:
         solution = create_solution_string(route,knapsack)
         print(solution)
         f.write(solution)
@@ -69,11 +69,26 @@ def read_init_solution_for(problem_name):
             knapsack_assignment[item_index] = 1
     return ttsp, knapsack_assignment, ttsp_permutation
 
+def reversePerm(permutation):
+    permutation[2:] = permutation[2:][::-1]
+    return permutation
 
 if __name__ == '__main__':
-    problem = 'pla33810_n338090'
-    ttsp, knapsack_bitstring, ttsp_permutation = read_init_solution_for(problem)
-    print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
-   # route, knapsack, prof = run_greedy(ttsp, ttsp_permutation)
-    #save_result(route,knapsack,problem, prof)
-    #print(timeit.timeit(read_from_file, number=3))
+    problems = ['a280_n279',
+'a280_n1395',
+'a280_n2790',
+'fnl4461_n4460',
+'fnl4461_n22300',
+'fnl4461_n44600',
+'pla33810_n33809',
+'pla33810_n169045']
+
+    for problem in problems:
+        fact = 1.0
+        while fact < 3.6:
+            ttsp, knapsack_bitstring, ttsp_permutation = read_init_solution_for(problem)
+            #print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
+            route, knapsack, prof = run_greedy(ttsp, reversePerm(ttsp_permutation), int(ttsp.dim/250), fact)
+            save_result(route,knapsack,problem, prof,fact)
+            fact += 0.2
+            #print(timeit.timeit(read_from_file, number=3))
