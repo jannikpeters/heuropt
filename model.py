@@ -61,6 +61,7 @@ class TTSP:
             self.item_weight[i] = int(temp[2])
             self.item_node[i] = int(temp[3])-1
 
+
         # Additional for faster computation
         index_cache_name = 'pickles/'+file.split('/')[1]+'_index'
         if os.path.isfile(index_cache_name+'.npy'):
@@ -72,12 +73,14 @@ class TTSP:
             np.save(index_cache_name, self.indexes_items_in_city, allow_pickle=True) # we must
             # allow pickle due to nested arrays
 
-        dist_cache_name = 'pickles/'+file.split('/')[1]+'_dist'
+        #The graphs should be the same for all files with the same first part of the name, right?
+        dist_cache_name = 'pickles/'+file.split('/')[1].split('_')[0]+'_dist'
         if os.path.isfile(dist_cache_name+'.npy'):
             print('Loading', dist_cache_name, 'from Cache')
             self.dist_cache = np.load(dist_cache_name+'.npy')
         else:
-            self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32))
+            self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32,
+                                                                                copy=False))
             np.save(dist_cache_name, self.dist_cache)
         self.normalizing_constant = (self.max_speed - self.min_speed) / self.knapsack_capacity
 
