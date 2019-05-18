@@ -1,3 +1,4 @@
+import itertools
 import os
 from functools import lru_cache
 import numpy as np
@@ -72,6 +73,13 @@ class TTSP:
                 np.array([np.where(self.item_node == city_i)[0] for city_i in range(self.dim)])
             np.save(index_cache_name, self.indexes_items_in_city, allow_pickle=True) # we must
             # allow pickle due to nested arrays
+
+        # if a city had less than max items they were pad with -1, this is only for the @njit
+        # functions which do not take arrays of objects so our array must be of
+        # type int not object. DO NOT USE FOR OTHER STUFF
+        self.city_item_index_opt_do_not_use = np.array(
+            list(itertools.zip_longest(*self.indexes_items_in_city, fillvalue=-1))).T
+
 
         #The graphs should be the same for all files with the same first part of the name, right?
         dist_cache_name = 'pickles/'+file.split('/')[1].split('_')[0]+'_dist'
