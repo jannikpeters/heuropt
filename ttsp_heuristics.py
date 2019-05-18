@@ -43,18 +43,22 @@ class greedy_ttsp:
             speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item]  *(
                         (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity))
             actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
-                                                              * speed_loss) + self.ttsp.renting_ratio * dist[
-                                        self.ttsp.item_node[item]])) / self.ttsp.item_weight[item], item)
+                                                              * speed_loss) + (self.ttsp.renting_ratio * dist[
+                                        self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
         actual_profit.sort()
         #print(actual_profit)
-        print(actual_profit)
+        #print(actual_profit)
         weight = 0
         assignment = np.zeros(self.ttsp.item_num)
         best_assignment = np.zeros(self.ttsp.item_num)
         count = 0
         max_val = profit(self.ttsp_permutation, assignment, self.ttsp)
+        last_i = []
         for (val, i) in reversed(actual_profit):
+            if val < 0:
+                break
             if weight + self.ttsp.item_weight[i] <= self.ttsp.knapsack_capacity and val > 0:
+                last_i.append(i)
                 weight += self.ttsp.item_weight[i]
                 assignment[i] = 1
                 count += 1
@@ -63,9 +67,15 @@ class greedy_ttsp:
                     current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
                     print('c', current_profit, max_val)
                     if current_profit < max_val:
-                        return best_assignment
+                        for item in last_i:
+                            assignment[item] = 0
+                            weight -= self.ttsp.item_weight[item]
                     else:
-                       best_assignment = assignment.copy()
                        max_val = current_profit
-        return best_assignment
+                    last_i = []
+        current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
+        if current_profit < max_val:
+            for item in last_i:
+                assignment[item] = 0
+        return assignment
 
