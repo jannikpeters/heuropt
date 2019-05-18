@@ -1,3 +1,4 @@
+import os
 import random
 from glob import iglob
 
@@ -50,7 +51,10 @@ def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     return ttsp_permutation, knapsack_assignment, p
 
 def save_result(route: np, knapsack, filename, profit, fact):
-    with open('gecco_solutions/'+filename+'_p'+str(int(round(profit))) + '_c' + str(fact), 'w') as f:
+    if not os.path.exists('gecco_solutions/'+filename):
+        os.makedirs('gecco_solutions/'+filename)
+    with open('gecco_solutions/'+filename+'/'+filename+'_p'+str(int(round(profit))) + '_c' + str(fact),
+              'w') as f:
         solution = create_solution_string(route,knapsack)
         print(solution)
         f.write(solution)
