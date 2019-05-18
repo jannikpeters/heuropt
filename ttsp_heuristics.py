@@ -49,8 +49,8 @@ class greedy_ttsp:
         #print(actual_profit)
         #print(actual_profit)
         weight = 0
-        assignment = np.zeros(self.ttsp.item_num)
-        best_assignment = np.zeros(self.ttsp.item_num)
+        assignment = np.zeros(self.ttsp.item_num, dtype=np.bool)
+        best_assignment = np.zeros(self.ttsp.item_num, dtype=np.bool)
         count = 0
         max_val = profit(self.ttsp_permutation, assignment, self.ttsp)
         last_i = []

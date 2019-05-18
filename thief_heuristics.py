@@ -1,6 +1,8 @@
 import random
 from glob import iglob
 
+import gc
+
 from knapsack_heuristics import Greedy
 from model import TTSP
 from ttsp_heuristics import NeighrestNeighbors, greedy_ttsp
@@ -76,64 +78,16 @@ def reversePerm(permutation):
 
 if __name__ == '__main__':
     problems = ['a280_n279','a280_n1395','a280_n2790',
-                'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600']
-                #'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
-    for fact in [1.7, 2.0, 2.4, 2.6, 3.0]:
-        for problem in problems:
-            count = 0
-            while count == 0:
-                count += 1
-                ttsp, knapsack_bitstring, route = read_init_solution_for(problem)
-                n = ttsp.item_num
-                #route, knapsack, prof = run_greedy(ttsp, reversePerm(ttsp_permutation), max(1,int(ttsp.item_num / 1000)), fact)
-                #print(prof)
-                #save_result(route, knapsack, problem, prof, fact)
-                zeroes = []
-                ones = []
-                knapsack = knapsack_bitstring
-                prof = profit(route, knapsack_bitstring, ttsp)
-                for i in range(len(knapsack)):
-                    if knapsack[i] == 1:
-                        ones.append(i)
-                    else:
-                        zeroes.append(i)
-                random.shuffle(ones)
-                random.shuffle(zeroes)
-                while count < 300000:
-                    s = np.random.rand()
-                    count += 1
-                    if True:
-                        numbers_of_changes = np.random.binomial(n, 3/n)
-                        items_to_change = np.random.choice(n, numbers_of_changes)
-                        for item in items_to_change:
-                            knapsack[item] = 1 - knapsack[item]
-                        gain = profit(route, knapsack, ttsp)
-                        if  gain > prof:
-                            prof = gain
-                            print(prof)
-                        else:
-                            for item in items_to_change:
-                                knapsack[item] = 1 - knapsack[item]
-
-                save_result(route, knapsack, problem, prof, fact)
-                '''while count < 5000:
-                    count += 1
-                    first = np.random.randint(ttsp.dim-1)+1
-                    #second = np.random.randint(ttsp.dim-1)+1
-                    second = min(n-1, first + np.random.binomial(n, 10/n))
-                    ttsp_permutation[min(first, second):max(first, second)] = ttsp_permutation[min(first, second):max(first, second)][::-1]
-                    #print(first, second)
-                    prof2 = profit(ttsp_permutation, knapsack, ttsp)
-                    #route2, knapsack2, prof2 = run_greedy(ttsp, ttsp_permutation, int(ttsp.dim / 250), fact)
-                    #print(prof2)
-                    if prof2 > prof:
-                        prof = prof2
-                        #route = route2
-                        #knapsack = knapsack2
-                        print(prof2)
-                    else:
-                        ttsp_permutation[min(first, second):max(first, second)] = ttsp_permutation[
-                                                                                  min(first, second):max(first, second)][
-                                                                                  ::-1]
-                # print(timeit.timeit(read_from_file, number=3))
-                save_result(route, knapsack, problem, prof, fact)'''
+                'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
+                'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
+    for problem in problems:
+        fact = 1.0
+        ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_for(problem)
+        while fact < 3.6:
+            knapsack_bitstring = knapsack_original.copy()
+            ttsp_permutation = ttsp_permutation_original.copy()
+            gc.collect()  # just to be sure previous ones are gone
+            print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
+            route, knapsack, prof = run_greedy(ttsp, reversePerm(ttsp_permutation), int(ttsp.dim / 250), fact)
+            save_result(route, knapsack, problem, prof, fact)
+            fact += 0.2

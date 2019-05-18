@@ -1,9 +1,23 @@
 import numpy as np
+from numba import njit
 
 from model import TTSP
 
 
 def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
+
+    p_opt = profit_opt(tour, packing_bitstring, ttsp.item_weight,
+                       ttsp.city_item_index_opt_do_not_use,
+                       ttsp.renting_ratio, ttsp.dist_cache, ttsp.item_profit,
+                       ttsp.knapsack_capacity, ttsp.normalizing_constant, tour.size, ttsp.max_speed)
+    # p_old = profit_old(tour, packing_bitstring, ttsp)
+    # if p_old != p_opt:
+    #     print(p_old, 'vs.', p_opt)
+    #     exit(-1)
+    return p_opt
+
+
+def profit_old(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
     R = ttsp.renting_ratio
     n = len(tour)
     cost = 0
@@ -16,8 +30,26 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
         cost += tij
     return knapsack_value(packing_bitstring, ttsp) - R * cost
 
+@njit
+def profit_opt(tour: np.ndarray, packing_bitstring: np.ndarray, item_weight: np.ndarray,
+               indexes_items_in_city: np.ndarray, R: int, dist_matr: np.ndarray,
+               item_profit: np.ndarray, knapsack_capacity: int, norm_const: int, tour_size: int,
+               max_speed: int):
+    "It might be that the knapsack must be legal or this will explode, i am not sure"
+    cost = 0
+    current_weight = 0
+    for i in range(tour_size):
+        city_i = tour[i % tour_size]
+        city_ip1 = tour[(i + 1) % tour_size]
+        current_weight += added_weight_at_opt(city_i, packing_bitstring, item_weight,
+                                              indexes_items_in_city)
+        tij = t_opt(city_i, city_ip1, dist_matr, max_speed, norm_const, current_weight)
+        cost += tij
+    return knapsack_value_opt(packing_bitstring, item_profit, item_weight,
+                              knapsack_capacity) - R * cost
 
-def total_distance(tour:np.ndarray, ttsp:TTSP):
+
+def total_distance(tour: np.ndarray, ttsp: TTSP):
     n = tour.size
     cost = 0
     for i in range(n):
@@ -27,7 +59,8 @@ def total_distance(tour:np.ndarray, ttsp:TTSP):
         cost += tij
     return cost
 
-def dist_to_opt(tour:np.ndarray, ttsp:TTSP):
+
+def dist_to_opt(tour: np.ndarray, ttsp: TTSP):
     total_dist = total_distance(tour, ttsp)
     n = tour.size
     dist_to_end = np.zeros(n)
@@ -41,6 +74,7 @@ def dist_to_opt(tour:np.ndarray, ttsp:TTSP):
     dist_to_end[tour[0]] = total_dist
     return dist_to_end
 
+
 def knapsack_value(assignment, ttspModel):
     value = np.multiply(assignment, ttspModel.item_profit).sum()
     weight = np.multiply(assignment, ttspModel.item_weight).sum()
@@ -50,23 +84,17 @@ def knapsack_value(assignment, ttspModel):
         return value
 
 
-def t(city_i, city_j, ttsp: TTSP, current_weight):
+
+
+def t(city_i:int , city_j:int, ttsp: TTSP, current_weight):
     # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
-    return ttsp.dist(city_i, city_j)/ (ttsp.max_speed - current_weight *
-                                         ttsp.normalizing_constant)
-
-def t_with_weight_zero(city_i, city_j, ttsp: TTSP):
-    # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
-    return ttsp.dist(city_i, city_j)/ ttsp.max_speed
-
-def weight_at(city_i, bitstring, ttsp: TTSP):
-    weights = np.multiply(ttsp.item_weight, bitstring)
-    in_city = ttsp.item_node == city_i
-    int_res = np.multiply(weights, in_city).sum(dtype=np.int)
-    return int_res
+    return ttsp.dist(city_i, city_j) / (ttsp.max_speed - current_weight *
+                                        ttsp.normalizing_constant)
 
 
-def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP):
+
+
+def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP) -> np.int:
     indexes_items_in_city = ttsp.indexes_items_in_city[city_i]
     if len(indexes_items_in_city) == 0:
         return 0
@@ -75,3 +103,33 @@ def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP):
     res = np.multiply(is_taken, weights).sum(dtype=np.int)
     return res
 
+@njit
+def t_opt(city_i: int, city_j:int, dist_matr: np.ndarray, max_speed:int, norm_const,
+          current_weight: int):
+    # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
+    return dist_matr[city_i, city_j] / (max_speed - current_weight * norm_const)
+
+@njit
+def added_weight_at_opt(city_i: int, bit_string: np.ndarray, item_weight: np.ndarray,
+                        index_city_items: np.ndarray):
+    # if a city had less than max items they were padded with -1 we need to remove these
+    city_items = index_city_items[city_i]
+    valid_indexes = np.where(city_items != -1)
+    unpadded_indexes = city_items[valid_indexes]
+    if len(unpadded_indexes) == 0:
+        return 0
+    is_taken = bit_string[unpadded_indexes]
+    weights = item_weight[unpadded_indexes]
+    mult = np.multiply(is_taken, weights)
+    res = mult.sum()
+    return res
+
+@njit
+def knapsack_value_opt(assignment: np.ndarray, item_profit: np.ndarray, item_weight: np.ndarray,
+                       knapsack_capacity: int):
+    value = np.multiply(assignment, item_profit).sum()
+    weight = np.multiply(assignment, item_weight).sum()
+    if weight > knapsack_capacity:
+        return np.nan
+    else:
+        return value
