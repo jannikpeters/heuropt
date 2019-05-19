@@ -2,7 +2,7 @@ from TestCase import TestCase
 from model import TTSP
 import numpy as np
 from evaluation_function import profit as calculate_profit
-
+from numba import njit
 
 
 class OnePlusOneEA():
@@ -21,65 +21,113 @@ class OnePlusOneEA():
         self.kp_selection_func = kp_selection_func
         self.tour = tour
         self.kp = kp
+        self.tour_size = len(tour)
         self.rent = rent
 
-        # init profit variables
-        self.weight = self.ttsp.item_weight[kp].sum()
-        self.value = self.ttsp.item_profit[kp].sum()
+        # init kp profit
+
+        self.value = np.multiply(kp, ttspModel.item_profit).sum()
+        self.weight = np.multiply(kp, ttspModel.item_weight).sum()
+
+        # init rent
+        self.city_weights = np.zeros(self.tour_size)  # weight at city i
+        self.init_rent()
 
         self.rent = rent
 
-    def _induce_kp_profit(self, kp: np.ndarray, kp_change_list: list):
+    def init_rent(self):
+        tour_size = self.tour_size
+        for i in range(tour_size):
+            city_i = self.tour[i % tour_size]
+
+            self.city_weights[city_i] = self.added_weight_at_opt(city_i, self.kp, self.ttsp.item_weight,
+                                                                 self.ttsp.city_item_index_opt_do_not_use)
+
+    def _induce_profit_kp_change(self, kp: np.ndarray, kp_change_list: list):
 
         # apply knapsack changes
         new_value = self.value
         new_weight = self.weight
+        cities = []
+
         for item_index in kp_change_list:
             # if the item is currently 0 we will make it 1 and vice versa
             new_value += ((-2) * kp[item_index] + 1) * self.ttsp.item_profit[item_index]
             new_weight += ((-2) * kp[item_index] + 1) * self.ttsp.item_weight[item_index]
+            cities.append(self.ttsp.item_node[item_index])
+
+        rent = 0
+        current_weight = 0
+
+
+        for i in range(self.tour_size):
+            city_i = self.tour[i % self.tour_size]
+            city_ip1 = self.tour[(i + 1) % self.tour_size]
+
+            current_weight += self.city_weights[city_i]
+            weight_changes = 0
+            for j, item_index in enumerate(kp_change_list):
+                if cities[j] == city_i:
+                    weight_changes += ((-2) * kp[item_index] + 1) * self.ttsp.item_weight[item_index]
+
+            current_weight += weight_changes
+
+            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed, self.ttsp.normalizing_constant,
+                             current_weight)
+            rent += tij
 
         if new_weight > self.ttsp.knapsack_capacity:
-            return -1, -1
+            return -1, -1, -1
         else:
-            return new_value, new_weight
+            return new_value, new_weight, new_value - self.ttsp.renting_ratio * rent
 
-    def _induce_renting_cost(self):
-        # swapped city
-        pass
+    def t_opt(self, city_i: int, city_j: int, dist_matr: np.ndarray, max_speed: int, norm_const,
+              current_weight: int):
+        # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
+        return dist_matr[city_i, city_j] / (max_speed - current_weight * norm_const)
 
-    def _induce_profit(self):
-        kp_value, _ = self._induce_kp_profit()
-        rent = self._induce_renting_cost()
-        return kp_value - R * rent
-
-    def _commit_changes(self, assignment, change_list):
-        for item in change_list:
-            assignment[item] = 1 - assignment[item]
+    def added_weight_at_opt(self, city_i: int, bit_string: np.ndarray, item_weight: np.ndarray,
+                            index_city_items: np.ndarray):
+        # if a city had less than max items they were padded with -1 we need to remove these
+        city_items = index_city_items[city_i]
+        valid_indexes = np.where(city_items != -1)
+        unpadded_indexes = city_items[valid_indexes]
+        if len(unpadded_indexes) == 0:
+            return 0
+        is_taken = bit_string[unpadded_indexes]
+        weights = item_weight[unpadded_indexes]
+        mult = np.multiply(is_taken, weights)
+        res = mult.sum()
+        return res
 
     def _commit_kp_changes(self, kp, change_list):
         for item in change_list:
             kp[item] = 1 - kp[item]
+            if kp[item] == 0:
+                self.city_weights[self.ttsp.item_node[item]] -= self.ttsp.item_weight[item]
+            else:
+                self.city_weights[self.ttsp.item_node[item]] += self.ttsp.item_weight[item]
 
     def optimize(self):
 
         kp = self.kp
         n = self.ttsp.item_num
 
+        knapsack_change = True
+        profit = calculate_profit(self.tour, self.kp, self.ttsp)
+
         while not self.stopping_criterion.is_done(self.value):
+            if knapsack_change:
 
-            # knapsack changes
-            kp_changes = self.kp_selection_func(n)
-            new_value, new_weight = self._induce_kp_profit(kp, kp_changes)
+                # knapsack changes
+                kp_changes = self.kp_selection_func(n)
+                new_value, new_weight, new_profit = self._induce_profit_kp_change(kp, kp_changes)
 
-            if new_value >= self.value and new_weight <= self.ttsp.knapsack_capacity:
-                self.value = new_value
-                self.weight = new_weight
-                self._commit_kp_changes(kp, kp_changes)
-
-            # todo tour changes
-                #if new_value != -1:
-                #    print(new_value)
+                if new_profit >= profit and new_weight <= self.ttsp.knapsack_capacity:
+                    self.value = new_value
+                    self.weight = new_weight
+                    profit = new_profit
+                    self._commit_kp_changes(kp, kp_changes)
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 

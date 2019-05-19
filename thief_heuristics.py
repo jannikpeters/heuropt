@@ -104,7 +104,9 @@ if __name__ == '__main__':
 
             value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
             print(value - ttsp.renting_ratio * rent)
-            test_case = TestCase(17000, 0.1,ttsp)
+            print('rent:')
+            print(rent)
+            test_case = TestCase(17000, 5,ttsp)
             n = ttsp.dim
             p = 5
 
