@@ -131,7 +131,4 @@ class OnePlusOneEA():
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
-        return profit, self.kp, self.tour, self.stopping_criterion.steps, \
-               self.stopping_criterion.is_timed_out, \
-               self.stopping_criterion.elapsed_time(), \
-               self.stopping_criterion.result_over_time
+        return profit, self.kp, self.tour, self.stopping_criterion
