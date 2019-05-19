@@ -81,17 +81,19 @@ def reversePerm(permutation):
     return permutation
 
 if __name__ == '__main__':
-    problems = ['a280_n279','a280_n1395','a280_n2790',
+    problems = ['a280_n279', 'a280_n2790','a280_n1395',
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
     for problem in problems:
-        fact = 1.0
+        fact = 1
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_for(problem)
-        while fact < 3.6:
+
+        while fact < 7:
             knapsack_bitstring = knapsack_original.copy()
             ttsp_permutation = ttsp_permutation_original.copy()
             gc.collect()  # just to be sure previous ones are gone
             print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
             route, knapsack, prof = run_greedy(ttsp, reversePerm(ttsp_permutation), int(ttsp.dim / 250), fact)
             save_result(route, knapsack, problem, prof, fact)
-            fact += 0.2
+
+            fact += 0.5
