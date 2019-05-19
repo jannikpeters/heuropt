@@ -52,10 +52,11 @@ def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     p = profit(ttsp_permutation, knapsack_assignment, ttsp)
     return ttsp_permutation, knapsack_assignment, p
 
-def save_result(route: np, knapsack, filename, profit, fact):
+def save_result(route, knapsack, filename, profit, fact, ea='greed'):
     if not os.path.exists('gecco_solutions/'+filename):
         os.makedirs('gecco_solutions/'+filename)
-    with open('gecco_solutions/'+filename+'/'+filename+'_p'+str(int(round(profit))) + '_c' + str(fact),
+    with open('gecco_solutions/'+filename+'/'+filename+'_'+ea+'_p'+str(int(round(profit))) + '_c' +
+              str(fact),
               'w') as f:
         solution = create_solution_string(route,knapsack)
         print(solution)
@@ -100,9 +101,9 @@ if __name__ == '__main__':
             gc.collect()  # just to be sure previous ones are gone
             #print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
             route, knapsack, prof = run_greedy(ttsp, reversePerm(ttsp_permutation), int(ttsp.dim / 250), fact)
-
-
             value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
+            save_result(route, knapsack, problem, prof, fact)
+
             print(value - ttsp.renting_ratio * rent)
             print('rent:')
             print(rent)
@@ -112,8 +113,6 @@ if __name__ == '__main__':
 
             ea = OnePlusOneEA(ttsp,route,knapsack,test_case, lambda n: return_bin_vals(n, p / n),
                  rent,42)
-            res = ea.optimize()
-            print(res)
-
-            save_result(route, knapsack, problem, prof, fact)
+            ea_profit, ea_kp, ea_tour, test_c = ea.optimize()
+            save_result(ea_tour, ea_kp, problem, ea_profit, fact, 'ea')
             fact += 0.2
