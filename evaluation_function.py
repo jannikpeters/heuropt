@@ -4,17 +4,18 @@ from numba import njit
 from model import TTSP
 
 
-def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
+def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP, seperate_value_rent=False):
 
-    p_opt = profit_opt(tour, packing_bitstring, ttsp.item_weight,
+    value =  knapsack_value_opt(packing_bitstring, ttsp.item_profit, ttsp.item_weight,
+                                  ttsp.knapsack_capacity)
+    rent =  profit_opt(tour, packing_bitstring, ttsp.item_weight,
                        ttsp.city_item_index_opt_do_not_use,
-                       ttsp.renting_ratio, ttsp.dist_cache, ttsp.item_profit,
-                       ttsp.knapsack_capacity, ttsp.normalizing_constant, tour.size, ttsp.max_speed)
-    # p_old = profit_old(tour, packing_bitstring, ttsp)
-    # if p_old != p_opt:
-    #     print(p_old, 'vs.', p_opt)
-    #     exit(-1)
-    return p_opt
+                        ttsp.dist_cache, ttsp.normalizing_constant, tour.size, ttsp.max_speed)
+
+    if seperate_value_rent:
+        return value, rent
+    else:
+        return value - ttsp.renting_ratio * rent
 
 
 def profit_old(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
@@ -32,8 +33,7 @@ def profit_old(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
 
 @njit
 def profit_opt(tour: np.ndarray, packing_bitstring: np.ndarray, item_weight: np.ndarray,
-               indexes_items_in_city: np.ndarray, R: int, dist_matr: np.ndarray,
-               item_profit: np.ndarray, knapsack_capacity: int, norm_const: int, tour_size: int,
+               indexes_items_in_city: np.ndarray, dist_matr: np.ndarray, norm_const: int, tour_size: int,
                max_speed: int):
     "It might be that the knapsack must be legal or this will explode, i am not sure"
     cost = 0
@@ -45,9 +45,8 @@ def profit_opt(tour: np.ndarray, packing_bitstring: np.ndarray, item_weight: np.
                                               indexes_items_in_city)
         tij = t_opt(city_i, city_ip1, dist_matr, max_speed, norm_const, current_weight)
         cost += tij
-    return knapsack_value_opt(packing_bitstring, item_profit, item_weight,
-                              knapsack_capacity) - R * cost
 
+    return cost
 
 def total_distance(tour: np.ndarray, ttsp: TTSP):
     n = tour.size
