@@ -108,7 +108,7 @@ if __name__ == '__main__':
         print(value - ttsp.renting_ratio * rent)
         print('rent:')
         print(rent)
-        test_case = TestCase(17000, 10,ttsp)
+        test_case = TestCase(10,ttsp)
         n = ttsp.dim
         p = 3
 

@@ -4,9 +4,9 @@ from model import TTSP
 
 
 class TestCase():
-    def __init__(self, optimum, timout_min, ttspModel: TTSP):
+    def __init__(self, timout_min, ttspModel: TTSP):
         # Only assign primitives except for ttsp
-        self.optimum = optimum
+        self.optimum = None
         self.timeout_min = timout_min
         self.is_timed_out = False
         self.steps = 0
@@ -26,8 +26,6 @@ class TestCase():
         if time.time() - self.last_stored >= 10:
             self.last_stored = time.time()
             self.result_over_time.append(x)
-        if self.optimum == x:
-            return True
         elif self.stop_time <= time.time():
             self.is_timed_out = True
             return True
