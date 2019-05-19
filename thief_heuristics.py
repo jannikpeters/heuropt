@@ -88,7 +88,7 @@ def return_bin_vals(n, p):
     return np.random.choice(n, number_of_changes, replace=False)
 
 if __name__ == '__main__':
-    problems = ['fnl4461_n22300']
+    problems = ['pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
         #['a280_n279', 'a280_n2790','a280_n1395',
          #       'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
           #      'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
@@ -98,13 +98,13 @@ if __name__ == '__main__':
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_for(problem)
 
         #while fact < 7:
-        knapsack = knapsack_original.copy()
+        #knapsack = knapsack_original.copy()
         route = ttsp_permutation_original.copy()
         gc.collect()  # just to be sure previous ones are gone
         #print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
-        #route, knapsack, prof = run_greedy(ttsp, reversePerm(ttsp_permutation), int(ttsp.dim / 250), fact)
+        route, knapsack, prof = run_greedy(ttsp, reversePerm(route), int(ttsp.dim / 250), fact)
         value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
-        #save_result(route, knapsack, problem, prof, fact)
+        save_result(route, knapsack, problem, prof, fact)
         print(value - ttsp.renting_ratio * rent)
         print('rent:')
         print(rent)
@@ -112,7 +112,8 @@ if __name__ == '__main__':
         n = ttsp.dim
         p = 3
 
-        ea = OnePlusOneEA(ttsp,ttsp_permutation_original,knapsack_original,test_case, lambda n: return_bin_vals(n, p / n),
+        ea = OnePlusOneEA(ttsp,route,knapsack,test_case, lambda n: return_bin_vals(
+            n, p / n),
              rent,42)
         ea_profit, ea_kp, ea_tour, test_c = ea.optimize()
         save_result(ea_tour, ea_kp, problem, ea_profit, fact, 'ea')
