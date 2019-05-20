@@ -3,6 +3,7 @@ from model import TTSP
 import numpy as np
 from evaluation_function import profit as calculate_profit
 from numba import njit
+from scipy.spatial import KDTree
 
 
 class OnePlusOneEA():
@@ -80,6 +81,115 @@ class OnePlusOneEA():
             return -1, new_weight, -1
         else:
             return new_value, new_weight, new_value - self.ttsp.renting_ratio * rent
+
+    def _induce_reverse_nearest_neighbour(self,origins,k=5):
+        node_pos_in = origins[0]
+        node = self.tour[node_pos_in]
+        node_coord = self.ttsp.node_coord[node, :]
+        tree = self.tree
+        distances, idx = tree.query(node_coord, k=k)
+        best_neighbor_node = -1
+        max_abs = 0
+
+        for i in idx:
+            i_coord = tree.data[i]
+            i_pos_in_tour = self.node_pos_in_tour[i]
+            dif = (i_pos_in_tour - node_pos_in)
+            if max_abs < dif: # enforce, that a node on the tour following is used
+                max_abs = dif
+                best_neighbor_node = i
+
+        best_neighbor_node_pos_in_tour = self.node_pos_in_tour[best_neighbor_node]
+
+        if best_neighbor_node == -1 or best_neighbor_node_pos_in_tour == node_pos_in + 1 or node_pos_in in [0,1,2,self.tour_size-1,self.tour_size-2,self.tour_size-3]: # just skip
+            return None, None, None
+        else:
+            return self._induce_reverse_subpath(node, node_pos_in, best_neighbor_node, best_neighbor_node_pos_in_tour)
+
+
+    def _induce_reverse_subpath(self,node, node_pos_in, best_neighbor_node, best_neighbor_node_pos_in_tour):
+        """
+        plan:
+        origin -> bestneighbour+1
+        bestneighbor <- origin-1
+        (origin....bestneighbour)^T
+        """
+
+        assert node_pos_in < best_neighbor_node_pos_in_tour
+        assert node_pos_in + 1 != best_neighbor_node_pos_in_tour
+
+        start, reversal, end = np.split(self.tour, [node_pos_in, best_neighbor_node_pos_in_tour + 1])
+        assert reversal[0] == self.tour[node_pos_in]
+        assert reversal[-1] == self.tour[best_neighbor_node_pos_in_tour]
+        reversal = np.flip(reversal)
+        this_tour = np.concatenate([start, reversal, end])
+
+        rent = 0
+        current_weight = 0
+        k = 0
+
+        # distances btw [0,origin-1]
+        for i in range(node_pos_in-1):
+            city_i = self.tour[i % self.tour_size]
+            city_ip1 = self.tour[(i + 1) % self.tour_size]
+            current_weight += self.city_weights[city_i]
+            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                             self.ttsp.normalizing_constant,
+                             current_weight)
+            rent += tij
+            assert this_tour[k] == city_i
+            k += 1
+
+        # new edge (origin-1->best_neighbour)
+        city_i = self.tour[(node_pos_in-1) % self.tour_size]
+        city_ip1 = self.tour[best_neighbor_node_pos_in_tour % self.tour_size]
+        current_weight += self.city_weights[city_i]
+        tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                         self.ttsp.normalizing_constant,
+                         current_weight)
+        rent += tij
+        assert this_tour[k] == city_i
+        k += 1
+
+        # [best_neighbour -> origin] (reversed)
+        for i in reversed(range(node_pos_in+1,best_neighbor_node_pos_in_tour+1)):
+
+            city_i = self.tour[i % self.tour_size]
+            city_ip1 = self.tour[(i - 1) % self.tour_size]
+            current_weight += self.city_weights[city_i]
+            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                             self.ttsp.normalizing_constant,
+                             current_weight)
+            rent += tij
+            assert this_tour[k] == city_i
+            k += 1
+
+        # new edge (origin -> best-neigbourp1)
+        city_i = self.tour[node_pos_in % self.tour_size]
+        city_ip1 = self.tour[(best_neighbor_node_pos_in_tour + 1) % self.tour_size]
+        current_weight += self.city_weights[city_i]
+        tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                         self.ttsp.normalizing_constant,
+                         current_weight)
+        rent += tij
+        assert this_tour[k] == city_i
+        k += 1
+
+        # the rest
+        for i in range(best_neighbor_node_pos_in_tour + 1,self.tour_size):
+            city_i = self.tour[i % self.tour_size]
+            city_ip1 = self.tour[(i + 1) % self.tour_size]
+            current_weight += self.city_weights[city_i]
+            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                             self.ttsp.normalizing_constant,
+                             current_weight)
+            rent += tij
+            assert this_tour[k] == city_i
+            k += 1
+        cost = self.value - self.ttsp.renting_ratio * rent
+        assert calculate_profit(this_tour,self.kp, self.ttsp) == cost
+
+        return cost, node_pos_in, best_neighbor_node_pos_in_tour
 
     def _induce_profit_swap_change(self, tour_city_swaps: list):
         " tour_city_swaps is a list denoting the cities swapping with their neighbours."
@@ -185,13 +295,29 @@ class OnePlusOneEA():
                 self.tour[(i + 2) % self.tour_size] = tmp
                 swap_phase1 = True
 
+    def _commit_reversal(self,node_pos_in, best_neighbor_node_pos_in_tour):
+        assert node_pos_in < best_neighbor_node_pos_in_tour
+        start, reversal, end = np.split(self.tour,[node_pos_in,best_neighbor_node_pos_in_tour+1])
+        assert reversal[0] == self.tour[node_pos_in]
+        assert reversal[-1] == self.tour[best_neighbor_node_pos_in_tour]
+        reversal = np.flip(reversal)
+        self.tour = np.concatenate([start, reversal, end])
+
+
     def optimize(self):
 
         kp = self.kp
         n = self.ttsp.item_num
 
+        self.tree = KDTree(self.ttsp.node_coord)
+        self.node_pos_in_tour = np.zeros(self.tour.shape,dtype=np.int)
+        for i in range(len(self.tour)):
+            node = self.tour[i]
+            self.node_pos_in_tour[node] = i
+
         knapsack_change = False
-        tour_neig_change = True
+        cut_and_insert_tour = True
+        tour_neig_change = False
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
         while not self.stopping_criterion.is_done(self.value):
@@ -222,6 +348,20 @@ class OnePlusOneEA():
                     print('tour',profit)
                     self._commit_city_swaps(neighbor_swaps)
                     #print(new_profit, calculate_profit(self.tour, self.kp, self.ttsp))
+
+            if cut_and_insert_tour:
+
+                reverse_origin = np.random.choice(self.tour_size, 1, replace=False)
+                new_profit, node_pos_in, best_neighbor_node_pos_in_tour = self._induce_reverse_nearest_neighbour(reverse_origin)
+                if new_profit is not None:
+                    print(new_profit)
+                if new_profit is not None and new_profit >= profit:
+                    profit = new_profit
+                    print('***%s' % self.stopping_criterion.steps)
+                    self._commit_reversal(node_pos_in, best_neighbor_node_pos_in_tour)
+                    print(profit)
+                    print(calculate_profit(self.tour, self.kp, self.ttsp))
+
 
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
