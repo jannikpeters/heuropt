@@ -195,6 +195,7 @@ class OnePlusOneEA():
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
         while not self.stopping_criterion.is_done(self.value):
+            knapsack_change = np.random.rand()>0.5
             if knapsack_change:
 
                 # knapsack changes
@@ -212,11 +213,12 @@ class OnePlusOneEA():
                 # tausche mit neighbour
                 number_of_changes = np.random.binomial(n=self.tour_size, p=3 / self.tour_size) +1  # p= ??
                 neighbor_swaps = np.random.choice(self.tour_size, number_of_changes, replace=False)
-                print(neighbor_swaps)
+                #print(neighbor_swaps)
                 new_profit = self._induce_profit_swap_change(neighbor_swaps)
 
                 if new_profit >= profit:
                     profit = new_profit
+                    print(profit)
                     self._commit_city_swaps(neighbor_swaps)
 
 
