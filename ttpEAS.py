@@ -59,7 +59,6 @@ class OnePlusOneEA():
         rent = 0
         current_weight = 0
 
-
         for i in range(self.tour_size):
             city_i = self.tour[i % self.tour_size]
             city_ip1 = self.tour[(i + 1) % self.tour_size]
@@ -72,7 +71,8 @@ class OnePlusOneEA():
 
             current_weight += weight_changes
 
-            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed, self.ttsp.normalizing_constant,
+            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                             self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
 
@@ -80,6 +80,51 @@ class OnePlusOneEA():
             return -1, new_weight, -1
         else:
             return new_value, new_weight, new_value - self.ttsp.renting_ratio * rent
+
+    def _induce_profit_swap_change(self, tour_city_swaps: list):
+        " tour_city_swaps is a list denoting the cities swapping with their neighbours."
+
+        # apply knapsack changes
+        new_value = self.value
+        new_weight = self.weight
+
+        rent = 0
+        current_weight = 0
+
+        # the following tour_city_swaps are ignored:
+        # cities where previous city was already selected for swap
+        # 0 or n
+
+        swap_phase1 = False
+        swap_phase2 = False
+
+        for i in range(self.tour_size):
+            city_i = self.tour[i % self.tour_size]
+            city_ip1 = self.tour[(i + 1) % self.tour_size]
+
+            if swap_phase1:
+                temp = city_i
+                city_i = city_ip1
+                city_ip1 = temp
+                swap_phase1 = False
+                swap_phase2 = True
+
+            elif swap_phase2:
+                city_i = self.tour[(i - 1) % self.tour_size]
+                swap_phase2 = False
+
+            elif (i != self.tour_size - 2 or i != self.tour_size - 1) and i in tour_city_swaps:
+                city_ip1 = self.tour[(i + 2) % self.tour_size]
+                swap_phase1 = True
+
+            current_weight += self.city_weights[city_i]
+
+            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+                             self.ttsp.normalizing_constant,
+                             current_weight)
+            rent += tij
+
+        return new_value - self.ttsp.renting_ratio * rent
 
     def t_opt(self, city_i: int, city_j: int, dist_matr: np.ndarray, max_speed: int, norm_const,
               current_weight: int):
@@ -108,12 +153,45 @@ class OnePlusOneEA():
             else:
                 self.city_weights[self.ttsp.item_node[item]] += self.ttsp.item_weight[item]
 
+        """
+        i - 1->1
+        i+1 - i   . 2->3
+        i+2 - i+1  - i. 3->2
+        i+3 - i +2 - i+1. 4->4
+        a) b) c) 
+        
+        """
+
+    def _commit_city_swaps(self, tour_city_swaps):
+
+        swap_phase1 = False
+        swap_phase2 = False
+
+        for i in range(self.tour_size):
+            city_i = self.tour[i % self.tour_size]
+            city_ip1 = self.tour[(i + 1) % self.tour_size]
+
+            if swap_phase1:
+                swap_phase1 = False
+                swap_phase2 = True
+
+            elif swap_phase2:
+                swap_phase2 = False
+
+
+            elif (i != self.tour_size - 2 or i != self.tour_size - 1) and city_ip1 in tour_city_swaps:
+                tmp = city_ip1
+                self.tour[(i + 1) % self.tour_size] = self.tour[(i + 2) % self.tour_size]
+                self.tour[(i + 2) % self.tour_size] = tmp
+                swap_phase1 = True
+
     def optimize(self):
 
         kp = self.kp
         n = self.ttsp.item_num
 
-        knapsack_change = True
+        knapsack_change = False
+        tour_neig_change = True
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
         while not self.stopping_criterion.is_done(self.value):
@@ -129,6 +207,18 @@ class OnePlusOneEA():
                     profit = new_profit
                     self._commit_kp_changes(kp, kp_changes)
                     print(profit)
+
+            if tour_neig_change:
+                # tausche mit neighbour
+                number_of_changes = np.random.binomial(n=self.tour_size, p=3 / self.tour_size) +1  # p= ??
+                neighbor_swaps = np.random.choice(self.tour_size, number_of_changes, replace=False)
+                print(neighbor_swaps)
+                new_profit = self._induce_profit_swap_change(neighbor_swaps)
+
+                if new_profit >= profit:
+                    profit = new_profit
+                    self._commit_city_swaps(neighbor_swaps)
+
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
