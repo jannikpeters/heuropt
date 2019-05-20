@@ -103,8 +103,8 @@ class greedy_ttsp:
                         for item in last_i:
                             assignment[item] = 0
                             weight -= self.ttsp.item_weight[item]
-                        j -= factor
-                        factor = int(factor/2)
+                        #j -= factor
+                        #factor = int(factor/2)
                     else:
                        max_val = current_profit
                     last_i = []
