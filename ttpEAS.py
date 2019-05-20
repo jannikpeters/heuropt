@@ -97,7 +97,7 @@ class OnePlusOneEA():
 
         swap_phase1 = False
         swap_phase2 = False
-
+        visited = np.zeros(self.tour_size)
         for i in range(self.tour_size):
             city_i = self.tour[i % self.tour_size]
             city_ip1 = self.tour[(i + 1) % self.tour_size]
@@ -113,17 +113,17 @@ class OnePlusOneEA():
                 city_i = self.tour[(i - 1) % self.tour_size]
                 swap_phase2 = False
 
-            elif (i != self.tour_size - 2 or i != self.tour_size - 1) and i in tour_city_swaps:
+            elif (i != self.tour_size - 2 and i != self.tour_size - 1) and i in tour_city_swaps:
                 city_ip1 = self.tour[(i + 2) % self.tour_size]
                 swap_phase1 = True
 
             current_weight += self.city_weights[city_i]
-
+            visited[city_i] = 1
             tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                              self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
-
+        assert(visited.sum() == self.tour_size)
         return new_value - self.ttsp.renting_ratio * rent
 
     def t_opt(self, city_i: int, city_j: int, dist_matr: np.ndarray, max_speed: int, norm_const,
@@ -179,7 +179,7 @@ class OnePlusOneEA():
                 swap_phase2 = False
 
 
-            elif (i != self.tour_size - 2 or i != self.tour_size - 1) and city_ip1 in tour_city_swaps:
+            elif (i != self.tour_size - 2 and i != self.tour_size - 1) and i in tour_city_swaps:
                 tmp = city_ip1
                 self.tour[(i + 1) % self.tour_size] = self.tour[(i + 2) % self.tour_size]
                 self.tour[(i + 2) % self.tour_size] = tmp
@@ -207,9 +207,9 @@ class OnePlusOneEA():
                     self.weight = new_weight
                     profit = new_profit
                     self._commit_kp_changes(kp, kp_changes)
-                    print(profit)
+                    print('k',profit)
 
-            if tour_neig_change:
+            if not knapsack_change:
                 # tausche mit neighbour
                 number_of_changes = np.random.binomial(n=self.tour_size, p=3 / self.tour_size) +1  # p= ??
                 neighbor_swaps = np.random.choice(self.tour_size, number_of_changes, replace=False)
@@ -217,9 +217,11 @@ class OnePlusOneEA():
                 new_profit = self._induce_profit_swap_change(neighbor_swaps)
 
                 if new_profit >= profit:
+
                     profit = new_profit
-                    print(profit)
+                    print('tour',profit)
                     self._commit_city_swaps(neighbor_swaps)
+                    #print(new_profit, calculate_profit(self.tour, self.kp, self.ttsp))
 
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)

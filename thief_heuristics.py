@@ -96,7 +96,7 @@ def return_bin_vals(n, p):
     return np.random.choice(n, number_of_changes, replace=False)
 
 if __name__ == '__main__':
-    problems = ['a280_n2790']
+    problems = ['a280_n279', 'a280_n2790','a280_n1395','fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600']
         #['a280_n279', 'a280_n2790','a280_n1395',
          #       'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
           #      'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
@@ -113,7 +113,7 @@ if __name__ == '__main__':
             #print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
             #route, knapsack, prof = run_greedy(ttsp, reversePerm(route), int(ttsp.dim / 250), fact)
             #save_result(route, knapsack, problem, prof, fact)
-            test_case = TestCase(17000, 5, ttsp)
+            test_case = TestCase(17000, 2, ttsp)
             n = ttsp.dim
             p = 5
             value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
