@@ -23,6 +23,7 @@ class TestCase():
             self.last_stored = time.time()
             self.result_over_time = [x]
         self.steps += 1
+        #print(self.stop_time, time.time())
         if time.time() - self.last_stored >= 10:
             self.last_stored = time.time()
             self.result_over_time.append(x)

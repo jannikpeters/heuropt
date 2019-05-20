@@ -71,11 +71,11 @@ class greedy_ttsp:
         actual_profit = [0] * self.ttsp.item_num
         v = (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity
         for item in range(self.ttsp.item_num):
-            #speed_loss = -self.ttsp.renting_ratio / self.ttsp.max_speed - self.ttsp.item_weight[item] *v
-            #actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
-            #                                                  * speed_loss) + (self.ttsp.renting_ratio * dist[
-             #                           self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
-            actual_profit[item] = (self.testCoefficient(item, coefficient, dist),item)
+            speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
+            actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
+                                                              * speed_loss) + (self.ttsp.renting_ratio * dist[
+                                       self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
+            #actual_profit[item] = (self.testCoefficient(item, coefficient, dist),item)
             #actual_profit[item] = (self.opt_dist(item, dist, v), item)
         actual_profit.sort()
         print(actual_profit)
@@ -111,12 +111,12 @@ class greedy_ttsp:
                     last_i = []
             j += 1
         tour = self.ttsp_permutation
-        while True:
+        '''while True:
             start_profit = profit(tour, assignment, self.ttsp)
             assignment = self.local_search(assignment, tour)
             tour = self.insertion(assignment, tour)
             if start_profit >= profit(tour, assignment, self.ttsp):
-                break
+                break'''
         return assignment
 
 
