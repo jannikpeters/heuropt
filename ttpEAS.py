@@ -321,8 +321,8 @@ class OnePlusOneEA():
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
         while not self.stopping_criterion.is_done(self.value):
-            knapsack_change = np.random.rand()>0.5
-            if knapsack_change:
+            knapsack_change = np.random.rand()
+            if knapsack_change > 0.5:
 
                 # knapsack changes
                 kp_changes = self.kp_selection_func(n)
@@ -335,7 +335,7 @@ class OnePlusOneEA():
                     self._commit_kp_changes(kp, kp_changes)
                     print('k',profit)
 
-            if not knapsack_change:
+            elif knapsack_change < 0.333:
                 # tausche mit neighbour
                 number_of_changes = np.random.binomial(n=self.tour_size, p=3 / self.tour_size) +1  # p= ??
                 neighbor_swaps = np.random.choice(self.tour_size, number_of_changes, replace=False)
@@ -349,12 +349,10 @@ class OnePlusOneEA():
                     self._commit_city_swaps(neighbor_swaps)
                     #print(new_profit, calculate_profit(self.tour, self.kp, self.ttsp))
 
-            if cut_and_insert_tour:
+            else:
 
                 reverse_origin = np.random.choice(self.tour_size, 1, replace=False)
                 new_profit, node_pos_in, best_neighbor_node_pos_in_tour = self._induce_reverse_nearest_neighbour(reverse_origin)
-                if new_profit is not None:
-                    print(new_profit)
                 if new_profit is not None and new_profit >= profit:
                     profit = new_profit
                     print('***%s' % self.stopping_criterion.steps)
