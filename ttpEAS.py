@@ -77,7 +77,7 @@ class OnePlusOneEA():
             rent += tij
 
         if new_weight > self.ttsp.knapsack_capacity:
-            return -1, -1, -1
+            return -1, new_weight, -1
         else:
             return new_value, new_weight, new_value - self.ttsp.renting_ratio * rent
 
@@ -128,6 +128,7 @@ class OnePlusOneEA():
                     self.weight = new_weight
                     profit = new_profit
                     self._commit_kp_changes(kp, kp_changes)
+                    print(profit)
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
