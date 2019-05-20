@@ -95,7 +95,6 @@ class greedy_ttsp:
                 last_i.append(i)
                 weight += self.ttsp.item_weight[i]
                 assignment[i] = 1
-                count += 1
                 #print(profit(self.ttsp_permutation, assignment, self.ttsp))
                 if count % factor == 0:
                     current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
@@ -110,6 +109,7 @@ class greedy_ttsp:
                        max_val = current_profit
                     last_i = []
             j += 1
+            count += 1
         tour = self.ttsp_permutation
         '''while True:
             start_profit = profit(tour, assignment, self.ttsp)
