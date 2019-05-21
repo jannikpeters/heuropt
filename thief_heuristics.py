@@ -48,7 +48,7 @@ def save_result(route, knapsack, filename, profit, fact, ea='greed'):
         os.makedirs('gecco_solutions/' + filename)
     with open('gecco_solutions/' + filename + '/' + filename + '_' + ea + '_p' + str(
             int(round(profit))) + '_c' +
-              str(fact) + '_t' + str(time.time()),
+              str(fact) + '_t' + str(round(time.time())),
               'w') as f:
         solution = create_solution_string(route, knapsack)
         f.write(solution)
@@ -56,6 +56,7 @@ def save_result(route, knapsack, filename, profit, fact, ea='greed'):
 
 def read_init_solution_from(solutions_dir, problem_name):
     solution_file = solutions_dir + '/' + problem_name.split('.')[0] + '.txt'
+    gc.collect() # for the big ttsps
     ttsp = TTSP('gecc/' + problem_name + '.ttp')
     with open(solution_file, 'r') as fp:
         ttsp_permutation = fp.readline()
@@ -94,13 +95,13 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps):
         print('Greedy For:')
         fact = fact_start
         while fact < fact_stop:
+            ttsp = None # To free memory from old ttsps
             ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
                 'solutions', problem)
             route = ttsp_permutation_original.copy()
-            gc.collect()
             route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
             save_result(route, knapsack, problem, prof, fact, 'greed')
-            fact += round(fact + fact_steps, 5)
+            fact = round(fact + fact_steps, 5)
 
 
 def run_ea_for(problems, timeout_min):
@@ -108,12 +109,13 @@ def run_ea_for(problems, timeout_min):
                                'final_profit', 'time',
                                'profit_over_time', 'steps', 'p'])
     for problem in problems:
+        ttsp = None  # To free memory from old ttsps
         ttsp, knapsack, route = read_init_solution_from(
             'solutions', problem)
         test_case = TestCase(timeout_min, ttsp)
-        gc.collect()
         p = 3
-        init_profit, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
+        _, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
+        init_profit = profit(route, knapsack, ttsp)
         ea = OnePlusOneEA(ttsp, route, knapsack, test_case, lambda n: return_bin_vals(n, p / n),
                           rent, 42)
         ea_profit, ea_kp, ea_tour, test_c = ea.optimize()
@@ -139,5 +141,5 @@ if __name__ == '__main__':
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
     # Todo: KEEP THIS CLEAN!
-    # run_greedy_for(problems, 1, 5, 1)
+    #run_greedy_for(problems, 2, 5, 0.8)
     run_ea_for(problems, 1)

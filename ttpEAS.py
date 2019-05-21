@@ -6,6 +6,7 @@ from evaluation_function import profit as calculate_profit
 from numba import njit
 from scipy.spatial import KDTree
 from evaluation_function import t_opt
+import warnings
 
 
 class OnePlusOneEA():
@@ -48,7 +49,7 @@ class OnePlusOneEA():
                                                                  self.ttsp.city_item_index_opt_do_not_use)
 
     def _induce_profit_kp_change_old(self, kp: np.ndarray, kp_change_list: list):
-
+        warnings.warn(DeprecationWarning)
         # apply knapsack changes
         new_value = self.value
         new_weight = self.weight
@@ -87,30 +88,32 @@ class OnePlusOneEA():
             return new_value, new_weight, new_value - self.ttsp.renting_ratio * rent
 
     def _induce_profit_kp_change(self, kp: np.ndarray, kp_change_list: list):
-        old = self._induce_profit_kp_change_old(kp, kp_change_list)
+        #old = self._induce_profit_kp_change_old(kp, kp_change_list)
 
         new = _induced_profit_kp_changes_opt(self.value, self.weight,
                                                        kp, kp_change_list, self.tour_size,
                                                        self.tour,
                                                        self.city_weights,
                                                        self.ttsp.dist_cache, self.ttsp.ttp_opt)
-        if new != old:
-            print('shit', old, new)
-            exit(100)
+        # if new != old:
+        #     print('shit', old, new)
+        #     exit(100)
         return new
 
     def _induce_profit_swap_change(self, tour_city_swaps: np.ndarray):
-        old = self._induce_profit_swap_change_old(tour_city_swaps)
+        #old = self._induce_profit_swap_change_old(tour_city_swaps)
         new = _induce_profit_swap_change_opt(self.value, tour_city_swaps,
                                              self.tour_size, self.tour,
                                              self.city_weights, self.ttsp.dist_cache
                                              , self.ttsp.ttp_opt)
-        if new != old:
-            print('shit', old, new)
-            exit(100)
+        # if new != old:
+        #     print('shit', old, new)
+        #     exit(100)
         return new
 
     def _induce_reverse_nearest_neighbour(self, origins, k=5):
+        """TODO: Might be hard to optimize due to the usage of the kdtree. Perhaps we can numba
+        some smaller parts. """
         node_pos_in = origins[0]
         node = self.tour[node_pos_in]
         node_coord = self.ttsp.node_coord[node, :]
@@ -139,6 +142,7 @@ class OnePlusOneEA():
     def _induce_reverse_subpath(self, node, node_pos_in, best_neighbor_node,
                                 best_neighbor_node_pos_in_tour):
         """
+        TODO: Should be possible to optimize with numba
         plan:
         origin -> bestneighbour+1
         bestneighbor <- origin-1
@@ -226,6 +230,7 @@ class OnePlusOneEA():
 
     def _induce_profit_swap_change_old(self, tour_city_swaps: list):
         " tour_city_swaps is a list denoting the cities swapping with their neighbours."
+        warnings.warn(DeprecationWarning)
 
         # apply knapsack changes
         new_value = self.value
@@ -348,7 +353,7 @@ class OnePlusOneEA():
         tour_neig_change = False
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
-        while not self.stopping_criterion.is_done(self.value):
+        while not self.stopping_criterion.is_done(profit):
             knapsack_change = np.random.rand()
             if knapsack_change > 0.75:
 
@@ -386,7 +391,7 @@ class OnePlusOneEA():
                     profit = new_profit
                     # print('***%s' % self.stopping_criterion.steps)
                     self._commit_reversal(node_pos_in, best_neighbor_node_pos_in_tour)
-                    print(profit)
+                    print('rev', profit)
                     # print(calculate_profit(self.tour, self.kp, self.ttsp))
             else:
                 first = -1

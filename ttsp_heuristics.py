@@ -78,7 +78,7 @@ class greedy_ttsp:
             #actual_profit[item] = (self.testCoefficient(item, coefficient, dist),item)
             #actual_profit[item] = (self.opt_dist(item, dist, v), item)
         actual_profit.sort()
-        print(actual_profit)
+        #print(actual_profit)
         #print(actual_profit)
         weight = 0
         assignment = np.zeros(self.ttsp.item_num, dtype=np.bool)
