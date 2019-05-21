@@ -2,6 +2,8 @@ import itertools
 import os
 from functools import lru_cache
 import numpy as np
+from numba import jitclass
+import numba as nb
 from scipy.spatial.distance import pdist, squareform
 
 class TTSP:
@@ -42,7 +44,7 @@ class TTSP:
 
         # read node coords
         line = fp.readline()
-        self.node_coord = np.zeros((self.dim,2))
+        self.node_coord = np.zeros((self.dim,2), dtype=int)
         for i in range(self.dim):
             line = fp.readline()
             temp = line.split('\t')
@@ -91,6 +93,40 @@ class TTSP:
                                                                                 copy=False))
             np.save(dist_cache_name, self.dist_cache)
         self.normalizing_constant = (self.max_speed - self.min_speed) / self.knapsack_capacity
+        self.ttp_opt = TTP_OPT(self.dim, self.item_num, self.knapsack_capacity, self.min_speed,
+                               self.max_speed, self.normalizing_constant, self.renting_ratio,
+                               self.item_weight,self.item_profit,self.item_node)
 
 
+
+
+SPEC = [
+    ('dim', nb.int64),
+    ('item_num', nb.int64),
+    ('knapsack_capacity', nb.int64),
+    ('min_speed', nb.float64),
+    ('max_speed', nb.float64),
+    ('normalizing_constant', nb.float64),
+    ('renting_ratio', nb.float64),
+    ('item_weight', nb.int64[:]),
+    ('item_profit', nb.int64[:]),
+    ('item_node', nb.int64[:])
+
+]
+# see http://numba.pydata.org/numba-doc/latest/user/jitclass.html
+@jitclass(SPEC)
+class TTP_OPT:
+    def __init__(self, dim, item_num, knapsack_capacity,
+                 min_speed, max_speed, normalizing_constant, renting_ratio, item_weight,
+                 item_profit, item_node):
+        self.dim = dim
+        self.item_num = item_num
+        self.knapsack_capacity = knapsack_capacity
+        self.min_speed = min_speed
+        self.max_speed = max_speed
+        self.normalizing_constant = normalizing_constant
+        self.renting_ratio = renting_ratio
+        self.item_weight = item_weight
+        self.item_profit = item_profit
+        self.item_node = item_node
 

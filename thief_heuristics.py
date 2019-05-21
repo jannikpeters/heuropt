@@ -105,8 +105,8 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps):
 
 def run_ea_for(problems, timeout_min):
     df = pd.DataFrame(columns=['problem_name', 'init_profit',
-                               'final_profit', 'time', 'profit_over_time'
-                                                       'steps', 'p'])
+                               'final_profit', 'time',
+                               'profit_over_time', 'steps', 'p'])
     for problem in problems:
         ttsp, knapsack, route = read_init_solution_from(
             'solutions', problem)
@@ -140,4 +140,4 @@ if __name__ == '__main__':
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
     # Todo: KEEP THIS CLEAN!
     # run_greedy_for(problems, 1, 5, 1)
-    run_ea_for(problems, 0.5)
+    run_ea_for(problems, 1)
