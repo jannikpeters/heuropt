@@ -1,5 +1,6 @@
 from glob import iglob
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def load_file_names():
     names = ['a280_n279', 'a280_n2790','a280_n1395',
@@ -24,4 +25,13 @@ def load_file_names():
 
 if __name__ == '__main__':
     df = load_file_names()
-    print('i')
+    probs = df.problem_name.unique()
+    for prob in probs:
+        algos = ['greed', 'rev']
+        for alg in algos:
+            a_prob = df[(df.problem_name == prob) & (df.algo == alg)].groupby('c').max()
+            a_prob.profit.plot(label=alg)
+        plt.title(prob)
+        plt.ylabel('profit')
+        plt.legend()
+        plt.show()
