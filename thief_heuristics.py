@@ -1,5 +1,6 @@
 import os
 import random
+import time
 from glob import iglob
 
 import gc
@@ -35,17 +36,6 @@ def create_solution_string(ttsp_permutation, knapsack_assigment):
             knapsack.append(i+1)
     return str(ttsp)+ '\n'+ str(knapsack)
 
-def run():
-    for file in iglob('gecc/**.ttp'):
-        print(file)
-        ttsp = TTSP(file)
-        #print(ttsp.dim)
-        knapsack_val, knapsack_assignment = Greedy(ttsp).optimize()
-        ttsp_permutation = NeighrestNeighbors(ttsp).optimize()
-        print_sol(ttsp_permutation,knapsack_assignment)
-        print(profit(ttsp_permutation, knapsack_assignment, ttsp))
-        print(profit(ttsp_permutation[::-1], knapsack_assignment, ttsp))
-
 
 def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     knapsack_assignment = greedy_ttsp( ttsp, ttsp_permutation).optimize(factor, coeff)
@@ -56,15 +46,14 @@ def save_result(route, knapsack, filename, profit, fact, ea='greed'):
     if not os.path.exists('gecco_solutions/'+filename):
         os.makedirs('gecco_solutions/'+filename)
     with open('gecco_solutions/'+filename+'/'+filename+'_'+ea+'_p'+str(int(round(profit))) + '_c' +
-              str(fact),
+              str(fact) + '_t'+str(time.time()),
               'w') as f:
         solution = create_solution_string(route,knapsack)
-        print(solution)
         f.write(solution)
 
 
-def read_init_solution_for(problem_name):
-    solution_file = 'solutions/' + problem_name.split('.')[0] + '.txt'
+def read_init_solution_for(solutions_dir, problem_name):
+    solution_file = solutions_dir +'/' + problem_name.split('.')[0] + '.txt'
     ttsp = TTSP('gecc/'+problem_name+'.ttp')
     with open(solution_file, 'r') as fp:
         ttsp_permutation = fp.readline()
@@ -95,49 +84,40 @@ def return_bin_vals(n, p):
     number_of_changes = max(1, np.random.binomial(n=n, p=p))
     return np.random.choice(n, number_of_changes, replace=False)
 
-if __name__ == '__main__':
-    problems = ['a280_n279', 'a280_n2790','a280_n1395','fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600','pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
-    for problem in problems:
-        fact = 1
-        while fact < 5:
-            ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_for(problem)
-            #while fact < 7:
-            knapsack = knapsack_original.copy()
-            #knapsack= np.zeros(ttsp.item_num)
-            route = ttsp_permutation_original.copy()
-            gc.collect()  # just to be sure previous ones are gone
-            #print(profit(ttsp_permutation, knapsack_bitstring, ttsp))
-            route, knapsack, prof = run_greedy(ttsp, reversePerm(route), int(ttsp.dim / 250), fact)
-            save_result(route, knapsack, problem, prof, fact, 'rev')
-            route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
-            save_result(route, knapsack, problem, prof, fact)
-            '''test_case = TestCase(17000, 40, ttsp)
-            n = ttsp.dim
-            p = 3
-            value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
-            # save_result(route, knapsack, problem, prof, fact)
-            print(value - ttsp.renting_ratio * rent)
-            print('rent:')
-            print(rent)
-            ea = OnePlusOneEA(ttsp, route, knapsack, test_case, lambda n: return_bin_vals(n, p / n),
-                              rent, 42)
-            ea_profit, ea_kp, ea_tour, test_c = ea.optimize()
-            save_result(ea_tour, ea_kp, problem, ea_profit, fact, 'ea')'''
-            fact += 0.05
-            '''print(profit(route, knapsack, ttsp))
-            knapsack = randflip(knapsack, 0, ttsp.item_num)
-            print(profit(route, knapsack, ttsp))
-            value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
-            #save_result(route, knapsack, problem, prof, fact)
-            print(value - ttsp.renting_ratio * rent)
-            print('rent:')
-            print(rent)
-        test_case = TestCase(17000,  5 ,ttsp)
-        n = ttsp.dim
-        p = 5
 
-        ea = OnePlusOneEA(ttsp,route,knapsack,test_case, lambda n: return_bin_vals(n, p / n),
-             rent,42)
+def run_greedy_for(problems):
+    for problem in problems:
+        print('Greedy For:')
+        fact = 4.9
+        while fact < 5:
+            ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_for(
+                'solutions', problem)
+            knapsack = knapsack_original.copy()
+            route = ttsp_permutation_original.copy()
+            gc.collect()
+            route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
+            save_result(route, knapsack, problem, prof, fact, 'greed')
+            fact += 0.05
+
+def run_ea_for(problems):
+    for problem in problems:
+        ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_for(
+            'solutions',problem)
+        knapsack = knapsack_original.copy()
+        route = ttsp_permutation_original.copy()
+        test_case = TestCase(0.1, ttsp)
+        p = 3
+        value, rent = profit(route, knapsack, ttsp, seperate_value_rent=True)
+        ea = OnePlusOneEA(ttsp, route, knapsack, test_case, lambda n: return_bin_vals(n, p / n),
+                          rent, 42)
         ea_profit, ea_kp, ea_tour, test_c = ea.optimize()
-        save_result(ea_tour, ea_kp, problem, ea_profit, fact, 'ea')'''
+        save_result(ea_tour, ea_kp, problem, ea_profit, 0, 'ea')
+
+
+if __name__ == '__main__':
+    problems = ['a280_n279', 'a280_n2790','a280_n1395',
+                'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
+                'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
+    run_greedy_for(problems)
+    run_ea_for(problems)
 
