@@ -4,7 +4,7 @@ import numpy as np
 from evaluation_function import profit as calculate_profit
 from numba import njit
 from scipy.spatial import KDTree
-
+from evaluation_function import t_opt
 
 class OnePlusOneEA():
 
@@ -72,7 +72,7 @@ class OnePlusOneEA():
 
             current_weight += weight_changes
 
-            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                              self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
@@ -133,7 +133,7 @@ class OnePlusOneEA():
             city_i = self.tour[i % self.tour_size]
             city_ip1 = self.tour[(i + 1) % self.tour_size]
             current_weight += self.city_weights[city_i]
-            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                              self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
@@ -144,7 +144,7 @@ class OnePlusOneEA():
         city_i = self.tour[(node_pos_in-1) % self.tour_size]
         city_ip1 = self.tour[best_neighbor_node_pos_in_tour % self.tour_size]
         current_weight += self.city_weights[city_i]
-        tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+        tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                          self.ttsp.normalizing_constant,
                          current_weight)
         rent += tij
@@ -157,7 +157,7 @@ class OnePlusOneEA():
             city_i = self.tour[i % self.tour_size]
             city_ip1 = self.tour[(i - 1) % self.tour_size]
             current_weight += self.city_weights[city_i]
-            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                              self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
@@ -168,7 +168,7 @@ class OnePlusOneEA():
         city_i = self.tour[node_pos_in % self.tour_size]
         city_ip1 = self.tour[(best_neighbor_node_pos_in_tour + 1) % self.tour_size]
         current_weight += self.city_weights[city_i]
-        tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+        tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                          self.ttsp.normalizing_constant,
                          current_weight)
         rent += tij
@@ -180,7 +180,7 @@ class OnePlusOneEA():
             city_i = self.tour[i % self.tour_size]
             city_ip1 = self.tour[(i + 1) % self.tour_size]
             current_weight += self.city_weights[city_i]
-            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                              self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
@@ -229,17 +229,13 @@ class OnePlusOneEA():
 
             current_weight += self.city_weights[city_i]
             visited[city_i] = 1
-            tij = self.t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
+            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
                              self.ttsp.normalizing_constant,
                              current_weight)
             rent += tij
         assert(visited.sum() == self.tour_size)
         return new_value - self.ttsp.renting_ratio * rent
 
-    def t_opt(self, city_i: int, city_j: int, dist_matr: np.ndarray, max_speed: int, norm_const,
-              current_weight: int):
-        # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
-        return dist_matr[city_i, city_j] / (max_speed - current_weight * norm_const)
 
     def added_weight_at_opt(self, city_i: int, bit_string: np.ndarray, item_weight: np.ndarray,
                             index_city_items: np.ndarray):

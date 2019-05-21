@@ -43,6 +43,9 @@ class TestCase():
         else:
             return value, weight
 
+    def total_time(self):
+        return self.stop_time - self.start_time
+
     def copy(self):
         return copy.copy(self)
 

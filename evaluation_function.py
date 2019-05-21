@@ -105,7 +105,6 @@ def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP) -> np.int:
 @njit
 def t_opt(city_i: int, city_j:int, dist_matr: np.ndarray, max_speed:int, norm_const,
           current_weight: int):
-    # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
     return dist_matr[city_i, city_j] / (max_speed - current_weight * norm_const)
 
 @njit

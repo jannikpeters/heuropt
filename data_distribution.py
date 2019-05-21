@@ -5,7 +5,7 @@ import numpy.random
 import matplotlib.pyplot as plt
 from pathlib import Path
 import seaborn as sns
-from thief_heuristics import read_init_solution_for
+from thief_heuristics import read_init_solution_from
 from scipy.spatial import KDTree
 import matplotlib
 
@@ -172,7 +172,7 @@ if __name__ == '__main__':
 
     for file in [str(f) for f in files]:
         f = file.split('/')[-1].split('.')[-2]
-        ttsp, kp, tour = read_init_solution_for('solutions',f)
+        ttsp, kp, tour = read_init_solution_from('solutions', f)
 
         get_node_coords = lambda x: (ttsp.node_coord[x, 0], ttsp.node_coord[x, 1])
         tour_coords = np.vectorize(get_node_coords)(tour)
