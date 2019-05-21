@@ -37,7 +37,7 @@ class greedy_ttsp:
 
 
     def testCoefficient(self, item, factor, dist):
-        return (self.ttsp.item_profit[item]**factor)/((self.ttsp.item_weight[item]**factor)*3*dist[self.ttsp.item_node[item]])
+        return (self.ttsp.item_profit[item]**factor)/((self.ttsp.item_weight[item]**factor)*dist[self.ttsp.item_node[item]])
     def local_search(self, assignment, tour):
         prof = profit(tour, assignment, self.ttsp)
         for item in range(self.ttsp.item_num):
@@ -73,8 +73,8 @@ class greedy_ttsp:
         for item in range(self.ttsp.item_num):
             speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
             actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
-                                                              * speed_loss) + (self.ttsp.renting_ratio * dist[
-                                       self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
+                                                             * speed_loss) + (self.ttsp.renting_ratio * dist[
+                                    self.ttsp.item_node[item]])))/self.ttsp.item_weight[item] , item)
             #actual_profit[item] = (self.testCoefficient(item, coefficient, dist),item)
             #actual_profit[item] = (self.opt_dist(item, dist, v), item)
         actual_profit.sort()
