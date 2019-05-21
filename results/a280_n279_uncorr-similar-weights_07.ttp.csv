@@ -1,2 +1,0 @@
-,filename,algorithm,iterations,solution,time,kp_capacity,item_number,optimal_solution,aborted
-0,data/a280_n279_uncorr-similar-weights_07.ttp,(1+1)-EA zero_init,161503,121823,17.20142364501953,178347,279,121823,False

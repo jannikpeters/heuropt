@@ -97,10 +97,6 @@ def return_bin_vals(n, p):
 
 if __name__ == '__main__':
     problems = ['a280_n279', 'a280_n2790','a280_n1395','fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600','pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
-        #['a280_n279', 'a280_n2790','a280_n1395',
-         #       'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
-          #      'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
-
     for problem in problems:
         fact = 1
         while fact < 5:
