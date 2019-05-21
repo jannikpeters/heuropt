@@ -52,7 +52,7 @@ def _induced_profit_kp_changes_opt(value: float,
     else:
         return new_value, new_weight, new_value - ttp.renting_ratio * rent
 
-
+@njit
 def _induce_profit_swap_change_opt(value: float,
                                    tour_city_swaps: np.ndarray,
                                    tour_size: int,
@@ -79,7 +79,6 @@ def _induce_profit_swap_change_opt(value: float,
     for i in range(tour_size):
         city_i = tour[i % tour_size]
         city_ip1 = tour[(i + 1) % tour_size]
-        i_in_swaps = np.isin(i, tour_city_swaps)
         if swap_phase1:
             temp = city_i
             city_i = city_ip1
@@ -91,7 +90,7 @@ def _induce_profit_swap_change_opt(value: float,
             city_i = tour[(i - 1) % tour_size]
             swap_phase2 = False
 
-        elif (i != tour_size - 2 and i != tour_size - 1) and i_in_swaps:
+        elif (i != tour_size - 2 and i != tour_size - 1) and np.any(i == tour_city_swaps):
             city_ip1 = tour[(i + 2) % tour_size]
             swap_phase1 = True
 
