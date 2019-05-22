@@ -7,6 +7,7 @@ from numba import njit
 from scipy.spatial import KDTree
 from evaluation_function import t_opt
 import warnings
+import pandas as pd
 
 
 class OnePlusOneEA():
@@ -58,6 +59,7 @@ class OnePlusOneEA():
         self.mutator_funcs = [self.MUTATORS_defaults[n][0] for n in self.mutators_names]
 
         self.rs = np.random.RandomState(seed)
+        self.stats = []
 
     def init_rent(self):
         tour_size = self.tour_size
@@ -261,24 +263,47 @@ class OnePlusOneEA():
         if mutators is None:
             # janniks standard config
             mutator_names = self.mutators_names
-            mutator_probs = np.cumsum([self.MUTATORS_defaults[name][1] for name in mutator_names])
+            mutator_probs = [self.MUTATORS_defaults[name][1] for name in mutator_names]
         else:
             mutator_names = list(mutators.keys())
-            mutator_probs = np.cumsum([mutators[name] for name in mutator_names])
+            muator_probs = [mutators[name] for name in mutator_names]
 
-        assert mutator_probs[-1] == 1, "Probabilities should add up to 1."
         mutator_funcs = [self.MUTATORS_defaults[name][0] for name in mutator_names]
+        mutator_cumprobs = np.cumsum(mutator_probs)
+        assert mutator_cumprobs[-1] == 1, "Probabilities should add up to 1."
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
+        successes =  np.zeros(len(mutator_names))
+        failiures = np.zeros(len(mutator_names))
+        improvements = np.zeros(len(mutator_names))
+
         while not self.stopping_criterion.is_done(profit):
-            mutator = np.argmax(mutator_probs > self.rs.rand())
+            mutator = np.argmax(mutator_cumprobs > self.rs.rand())
 
             new_profit = mutator_funcs[mutator](current_profit=profit)
             if new_profit is not None:
+                if profit > new_profit:
+                    improvements[mutator] += 1
+                else:
+                    successes[mutator] += 1
+
                 profit = new_profit
+
+            else:
+                failiures[mutator] += 1
+
 
         p1 = calculate_profit(self.tour, self.kp, self.ttsp)
         assert p1 == profit, 'Somethings wrong with the mutators!'
 
-        return profit, self.kp, self.tour, self.stopping_criterion
+        stats = [{'mutator_name': mutator_names[i],
+                  'mutator_prob': mutator_probs[i],
+                  'mutator_successes': successes[i],
+                  'mutator_failures': failiures[i],
+                  'mutator_improvements': improvements[i],
+                  }for i in range(len(mutator_names))]
+
+        print(pd.DataFrame(stats))
+
+        return profit, self.kp, self.tour, self.stopping_criterion, stats

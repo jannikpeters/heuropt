@@ -118,13 +118,19 @@ def run_ea_for(problems, timeout_min):
         init_profit = profit(route, knapsack, ttsp)
         ea = OnePlusOneEA(ttsp, route, knapsack, test_case, lambda n: return_bin_vals(n, p / n),
                           rent, 42)
-        ea_profit, ea_kp, ea_tour, test_c = ea.optimize()
+        ea_profit, ea_kp, ea_tour, test_c, stats = ea.optimize()
         save_result(ea_tour, ea_kp, problem, ea_profit, 0, 'ea')
-        df = save_ea_performance(df, problem, init_profit, ea_profit, test_c, p)
+        df = save_ea_performance(df, problem, init_profit, ea_profit, test_c, p, stats)
     df.to_csv('gecco_solutions/ea_performance_at_' + str(int(time.time())) + '.csv')
 
 
-def save_ea_performance(df, problem: str, init_profit, final_profit, test_case: TestCase, p):
+def save_ea_performance(df, problem: str, init_profit, final_profit, test_case: TestCase, p, stats):
+    for row in stats:
+        row['problem'] = problem
+
+    pd.DataFrame(stats).to_csv('gecco_solutions/ea_performance_at_' + str(int(time.time())) + '.ea_stats.'+ problem + '.csv')
+
+    df.columns = ['-'.join(col).strip() for col in df.columns.values]
     new_row = {'problem_name': problem,
                'init_profit': init_profit,
                'final_profit': final_profit,
@@ -141,5 +147,6 @@ if __name__ == '__main__':
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
     # Todo: KEEP THIS CLEAN!
+    # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     run_ea_for(problems, 1)
