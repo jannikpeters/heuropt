@@ -252,24 +252,33 @@ class OnePlusOneEA():
         return None
 
     def optimize(self, mutators: dict = None):
+        """
+
+        :param mutators: Dict of 'mutator_name' : probabilty of occurrence
+        :return: optimized tour
+        """
 
         if mutators is None:
+            # janniks standard config
             mutator_names = self.mutators_names
-            mutator_funcs = [self.MUTATORS_defaults[name][0] for name in mutator_names]
-            mutator_probs = np.cumsum(
-                [self.MUTATORS_defaults[name][1] for name in mutator_names])  # as jannik put it before
+            mutator_probs = np.cumsum([self.MUTATORS_defaults[name][1] for name in mutator_names])
+        else:
+            mutator_names = list(mutators.keys())
+            mutator_probs = np.cumsum([mutators[name] for name in mutator_names])
 
-        assert mutator_probs[-1] == 1
+        assert mutator_probs[-1] == 1, "Probabilities should add up to 1."
+        mutator_funcs = [self.MUTATORS_defaults[name][0] for name in mutator_names]
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
         while not self.stopping_criterion.is_done(profit):
             mutator = np.argmax(mutator_probs > self.rs.rand())
 
-            new_profit = self.mutator_funcs[mutator](current_profit=profit)
+            new_profit = mutator_funcs[mutator](current_profit=profit)
             if new_profit is not None:
                 profit = new_profit
 
-        profit = calculate_profit(self.tour, self.kp, self.ttsp)
+        p1 = calculate_profit(self.tour, self.kp, self.ttsp)
+        assert p1 == profit, 'Somethings wrong with the mutators!'
 
         return profit, self.kp, self.tour, self.stopping_criterion
