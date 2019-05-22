@@ -1,5 +1,5 @@
 from TestCase import TestCase
-from ea_utils import _induced_profit_kp_changes_opt, _induce_profit_swap_change_opt
+import ea_utils
 from model import TTSP
 import numpy as np
 from evaluation_function import profit as calculate_profit
@@ -48,72 +48,26 @@ class OnePlusOneEA():
                                                                  self.ttsp.item_weight,
                                                                  self.ttsp.city_item_index_opt_do_not_use)
 
-    def _induce_profit_kp_change_old(self, kp: np.ndarray, kp_change_list: list):
-        warnings.warn(DeprecationWarning)
-        # apply knapsack changes
-        new_value = self.value
-        new_weight = self.weight
-        cities = []
-
-        for item_index in kp_change_list:
-            # if the item is currently 0 we will make it 1 and vice versa
-            new_value += ((-2) * kp[item_index] + 1) * self.ttsp.item_profit[item_index]
-            new_weight += ((-2) * kp[item_index] + 1) * self.ttsp.item_weight[item_index]
-            cities.append(self.ttsp.item_node[item_index])
-
-        rent = 0
-        current_weight = 0
-
-        for i in range(self.tour_size):
-            city_i = self.tour[i % self.tour_size]
-            city_ip1 = self.tour[(i + 1) % self.tour_size]
-
-            current_weight += self.city_weights[city_i]
-            weight_changes = 0
-            for j, item_index in enumerate(kp_change_list):
-                if cities[j] == city_i:
-                    weight_changes += ((-2) * kp[item_index] + 1) * self.ttsp.item_weight[
-                        item_index]
-
-            current_weight += weight_changes
-
-            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                        self.ttsp.normalizing_constant,
-                        current_weight)
-            rent += tij
-
-        if new_weight > self.ttsp.knapsack_capacity:
-            return -1, new_weight, -1
-        else:
-            return new_value, new_weight, new_value - self.ttsp.renting_ratio * rent
-
     def _induce_profit_kp_change(self, kp: np.ndarray, kp_change_list: list):
-        #old = self._induce_profit_kp_change_old(kp, kp_change_list)
-
-        new = _induced_profit_kp_changes_opt(self.value, self.weight,
-                                                       kp, kp_change_list, self.tour_size,
+        return ea_utils._induced_profit_kp_changes_opt(self.value,
+                                                       self.weight,
+                                                       kp,
+                                                       kp_change_list,
+                                                       self.tour_size,
                                                        self.tour,
                                                        self.city_weights,
-                                                       self.ttsp.dist_cache, self.ttsp.ttp_opt)
-        # if new != old:
-        #     print('shit', old, new)
-        #     exit(100)
-        return new
+                                                       self.ttsp.dist_cache,
+                                                       self.ttsp.ttp_opt)
 
     def _induce_profit_swap_change(self, tour_city_swaps: np.ndarray):
-        #old = self._induce_profit_swap_change_old(tour_city_swaps)
-        new = _induce_profit_swap_change_opt(self.value, tour_city_swaps,
-                                             self.tour_size, self.tour,
-                                             self.city_weights, self.ttsp.dist_cache
-                                             , self.ttsp.ttp_opt)
-        # if new != old:
-        #     print('shit', old, new)
-        #     exit(100)
-        return new
+        return ea_utils._induce_profit_swap_change_opt(self.value, tour_city_swaps,
+                                                       self.tour_size, self.tour,
+                                                       self.city_weights, self.ttsp.dist_cache
+                                                       , self.ttsp.ttp_opt)
 
     def _induce_reverse_nearest_neighbour(self, origins, k=5):
-        """TODO: Might be hard to optimize due to the usage of the kdtree. Perhaps we can numba
-        some smaller parts. """
+        # TODO[Anton]: Might be hard to optimize due to the usage of the kdtree. Perhaps we can numba
+        # TODO[Freya]: does not take too long anyways? the function that it calls is more relevant
         node_pos_in = origins[0]
         node = self.tour[node_pos_in]
         node_coord = self.ttsp.node_coord[node, :]
@@ -136,143 +90,22 @@ class OnePlusOneEA():
             0, 1, 2, self.tour_size - 1, self.tour_size - 2, self.tour_size - 3]:  # just skip
             return None, None, None
         else:
-            return self._induce_reverse_subpath(node, node_pos_in, best_neighbor_node,
-                                                best_neighbor_node_pos_in_tour)
+            return self._induce_reverse_subpath(node_pos_in,
+                                                best_neighbor_node_pos_in_tour), node_pos_in, best_neighbor_node_pos_in_tour
 
-    def _induce_reverse_subpath(self, node, node_pos_in, best_neighbor_node,
-                                best_neighbor_node_pos_in_tour):
+    def _induce_reverse_subpath(self, first_node, second_node):
         """
-        TODO: Should be possible to optimize with numba
-        plan:
-        origin -> bestneighbour+1
-        bestneighbor <- origin-1
-        (origin....bestneighbour)^T
+        Induce the profit of the changed tour: [:first_node]reversed([first_node:second_node+1])[second_node+1:]
+
+        second_node > first_node + 1
+        :param first_node: position of the first node in the tour
+        :param second_node: position of the second node in the tour
+        :return:
         """
-
-        assert node_pos_in < best_neighbor_node_pos_in_tour
-        assert node_pos_in + 1 != best_neighbor_node_pos_in_tour
-
-        start, reversal, end = np.split(self.tour,
-                                        [node_pos_in, best_neighbor_node_pos_in_tour + 1])
-        assert reversal[0] == self.tour[node_pos_in]
-        assert reversal[-1] == self.tour[best_neighbor_node_pos_in_tour]
-        reversal = np.flip(reversal, 0)
-        this_tour = np.concatenate([start, reversal, end])
-
-        rent = 0
-        current_weight = 0
-        k = 0
-
-        # distances btw [0,origin-1]
-        for i in range(node_pos_in - 1):
-            city_i = self.tour[i % self.tour_size]
-            city_ip1 = self.tour[(i + 1) % self.tour_size]
-            current_weight += self.city_weights[city_i]
-            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                        self.ttsp.normalizing_constant,
-                        current_weight)
-            rent += tij
-            assert this_tour[k] == city_i
-            k += 1
-
-        # new edge (origin-1->best_neighbour)
-        city_i = self.tour[(node_pos_in - 1) % self.tour_size]
-        city_ip1 = self.tour[best_neighbor_node_pos_in_tour % self.tour_size]
-        current_weight += self.city_weights[city_i]
-        tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                    self.ttsp.normalizing_constant,
-                    current_weight)
-        rent += tij
-        assert this_tour[k] == city_i
-        k += 1
-
-        # [best_neighbour -> origin] (reversed)
-        for i in reversed(range(node_pos_in + 1, best_neighbor_node_pos_in_tour + 1)):
-            city_i = self.tour[i % self.tour_size]
-            city_ip1 = self.tour[(i - 1) % self.tour_size]
-            current_weight += self.city_weights[city_i]
-            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                        self.ttsp.normalizing_constant,
-                        current_weight)
-            rent += tij
-            assert this_tour[k] == city_i
-            k += 1
-
-        # new edge (origin -> best-neigbourp1)
-        city_i = self.tour[node_pos_in % self.tour_size]
-        city_ip1 = self.tour[(best_neighbor_node_pos_in_tour + 1) % self.tour_size]
-        current_weight += self.city_weights[city_i]
-        tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                    self.ttsp.normalizing_constant,
-                    current_weight)
-        rent += tij
-        assert this_tour[k] == city_i
-        k += 1
-
-        # the rest
-        for i in range(best_neighbor_node_pos_in_tour + 1, self.tour_size):
-            city_i = self.tour[i % self.tour_size]
-            city_ip1 = self.tour[(i + 1) % self.tour_size]
-            current_weight += self.city_weights[city_i]
-            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                        self.ttsp.normalizing_constant,
-                        current_weight)
-            rent += tij
-            assert this_tour[k] == city_i
-            k += 1
-        cost = self.value - self.ttsp.renting_ratio * rent
-        assert calculate_profit(this_tour, self.kp, self.ttsp) == cost
-
-        return cost, node_pos_in, best_neighbor_node_pos_in_tour
-
-
-
-
-    def _induce_profit_swap_change_old(self, tour_city_swaps: list):
-        " tour_city_swaps is a list denoting the cities swapping with their neighbours."
-        warnings.warn(DeprecationWarning)
-
-        # apply knapsack changes
-        new_value = self.value
-        new_weight = self.weight
-
-        rent = 0
-        current_weight = 0
-
-        # the following tour_city_swaps are ignored:
-        # cities where previous city was already selected for swap
-        # 0 or n
-
-        swap_phase1 = False
-        swap_phase2 = False
-        visited = np.zeros(self.tour_size)
-        for i in range(self.tour_size):
-            city_i = self.tour[i % self.tour_size]
-            city_ip1 = self.tour[(i + 1) % self.tour_size]
-
-            if swap_phase1:
-                temp = city_i
-                city_i = city_ip1
-                city_ip1 = temp
-                swap_phase1 = False
-                swap_phase2 = True
-
-            elif swap_phase2:
-                city_i = self.tour[(i - 1) % self.tour_size]
-                swap_phase2 = False
-
-            elif (i != self.tour_size - 2 and i != self.tour_size - 1) and i in tour_city_swaps:
-                city_ip1 = self.tour[(i + 2) % self.tour_size]
-                swap_phase1 = True
-
-            current_weight += self.city_weights[city_i]
-            visited[city_i] = 1
-            tij = t_opt(city_i, city_ip1, self.ttsp.dist_cache, self.ttsp.max_speed,
-                        self.ttsp.normalizing_constant,
-                        current_weight)
-            rent += tij
-        assert (visited.sum() == self.tour_size)
-        return new_value - self.ttsp.renting_ratio * rent
+        return ea_utils._induce_reverse_subpath_opt(first_node, second_node,
+                                                    self.tour, self.tour_size,
+                                                    self.city_weights, self.ttsp.ttp_opt,
+                                                    self.value, self.ttsp.dist_cache)
 
     def added_weight_at_opt(self, city_i: int, bit_string: np.ndarray, item_weight: np.ndarray,
                             index_city_items: np.ndarray):

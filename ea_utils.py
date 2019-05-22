@@ -1,7 +1,8 @@
-from numba import njit
+from numba import njit, jit
 import numpy as np
 
 from evaluation_function import t_opt
+from evaluation_function import profit as calculate_profit
 from model import TTP_OPT
 
 
@@ -51,6 +52,7 @@ def _induced_profit_kp_changes_opt(value: float,
         return -1, new_weight, -1
     else:
         return new_value, new_weight, new_value - ttp.renting_ratio * rent
+
 
 @njit
 def _induce_profit_swap_change_opt(value: float,
@@ -102,3 +104,73 @@ def _induce_profit_swap_change_opt(value: float,
         rent += tij
     assert (visited.sum() == tour_size)
     return new_value - ttp.renting_ratio * rent
+
+
+@njit
+def _induce_reverse_subpath_opt(a_position: int,
+                                b_position: int,
+                                tour: np.ndarray,
+                                tour_size: int,
+                                city_weights: np.ndarray,
+                                ttsp: TTP_OPT,
+                                value: float,
+                                dist_cache):
+
+    assert a_position +1 < b_position, "Position of first node should be before second one in the tour."
+
+    rent = 0
+    current_weight = 0
+
+    # distances btw [0,origin-1]
+    for i in range(a_position - 1):
+        city_i = tour[i % tour_size]
+        city_ip1 = tour[(i + 1) % tour_size]
+        current_weight += city_weights[city_i]
+        tij = t_opt(city_i, city_ip1, dist_cache, ttsp.max_speed,
+                    ttsp.normalizing_constant,
+                    current_weight)
+        rent += tij
+
+    # new edge (origin-1->best_neighbour)
+    city_i = tour[(a_position - 1) % tour_size]
+    city_ip1 = tour[b_position % tour_size]
+    current_weight += city_weights[city_i]
+    tij = t_opt(city_i, city_ip1, dist_cache, ttsp.max_speed,
+                ttsp.normalizing_constant,
+                current_weight)
+    rent += tij
+
+    # [best_neighbour -> origin] (reversed)
+
+    for i in range(b_position - a_position):
+        i = b_position - i
+        city_i = tour[i % tour_size]
+        city_ip1 = tour[(i - 1) % tour_size]
+        #print(str(city_i) + ' > ' + str(city_ip1))
+        current_weight += city_weights[city_i]
+        tij = t_opt(city_i, city_ip1, dist_cache, ttsp.max_speed,
+                    ttsp.normalizing_constant,
+                    current_weight)
+        rent += tij
+
+    # new edge (origin -> best-neigbourp1)
+    city_i = tour[a_position % tour_size]
+    city_ip1 = tour[(b_position + 1) % tour_size]
+    current_weight += city_weights[city_i]
+    tij = t_opt(city_i, city_ip1, dist_cache, ttsp.max_speed,
+                ttsp.normalizing_constant,
+                current_weight)
+    rent += tij
+
+    # the rest
+    for i in range(b_position + 1, tour_size):
+        city_i = tour[i % tour_size]
+        city_ip1 = tour[(i + 1) % tour_size]
+        current_weight += city_weights[city_i]
+        tij = t_opt(city_i, city_ip1, dist_cache, ttsp.max_speed,
+                    ttsp.normalizing_constant,
+                    current_weight)
+        rent += tij
+
+    cost = value - ttsp.renting_ratio * rent
+    return cost
