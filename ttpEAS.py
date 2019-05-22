@@ -28,6 +28,8 @@ class OnePlusOneEA():
         self.tour_size = len(tour)
         self.rent = rent
 
+        self.tree = KDTree(self.ttsp.node_coord)
+
         # init kp profit
 
         self.value = np.multiply(kp, ttspModel.item_profit).sum()
@@ -38,6 +40,24 @@ class OnePlusOneEA():
         self.init_rent()
 
         self.rent = rent
+
+        self.node_pos_in_tour = np.zeros(self.tour.shape, dtype=np.int)
+        for i in range(len(self.tour)):
+            node = self.tour[i]
+            self.node_pos_in_tour[node] = i
+
+        self.MUTATORS_defaults  = {
+            'kp_swap_item': (self.mutate_item_swap,0.25),
+            'kp_flip_item' : (self.mutate_kp_flip,0.125),
+            'tour_city_swap': (self.mutate_city_swap,0.25),
+            'tour_reverse_subpath_neighbour': (self.mutate_reverse_subpath_neighbour,0.375),
+            'tour_reverse_subpath_random': (self.mutate_reverse_subpath_random,0),
+        }
+
+        self.mutators_names = list(self.MUTATORS_defaults.keys())
+        self.mutator_funcs = [self.MUTATORS_defaults[n][0] for n in self.mutators_names]
+        
+        self.rs = np.random.RandomState(seed)
 
     def init_rent(self):
         tour_size = self.tour_size
@@ -170,83 +190,94 @@ class OnePlusOneEA():
         reversal = np.flip(reversal, 0)
         self.tour = np.concatenate([start, reversal, end])
 
-    def optimize(self):
+    def mutate_kp_flip(self, current_profit):
+        kp_changes = self.kp_selection_func(self.ttsp.item_num)
+        new_value, new_weight, new_profit = self._induce_profit_kp_change(self.kp, kp_changes)
 
-        kp = self.kp
-        n = self.ttsp.item_num
+        if new_profit >= current_profit and new_weight <= self.ttsp.knapsack_capacity:
+            self.value = new_value
+            self.weight = new_weight
+            self._commit_kp_changes(self.kp, kp_changes)
+            return current_profit
 
-        self.tree = KDTree(self.ttsp.node_coord)
-        self.node_pos_in_tour = np.zeros(self.tour.shape, dtype=np.int)
-        for i in range(len(self.tour)):
-            node = self.tour[i]
-            self.node_pos_in_tour[node] = i
+        return None
 
-        knapsack_change = False
-        cut_and_insert_tour = True
-        tour_neig_change = False
+    def mutate_city_swap(self, current_profit):
+
+        number_of_changes = self.rs.binomial(n=self.tour_size,
+                                               p=3 / self.tour_size) + 1  # p= ??
+        neighbor_swaps = self.rs.choice(self.tour_size, number_of_changes, replace=False)
+
+        new_profit = self._induce_profit_swap_change(neighbor_swaps)
+        if new_profit >= current_profit:
+            self._commit_city_swaps(neighbor_swaps)
+            return  new_profit
+
+        return None
+
+    def mutate_reverse_subpath_random(self, current_profit):
+        a = self.rs.choice(self.tour_size, replace=False)
+        b = self.rs.choice(self.tour_size, replace=False)
+        first = min(a,b)
+        second = max(a,b)
+
+        if first != 0 and second != self.tour_size and first + 1 < second:
+
+            new_profit = self._induce_reverse_subpath(first,second)
+            if new_profit is not None and new_profit >= current_profit:
+                self._commit_reversal(first, second)
+                return new_profit
+        return None
+
+    def mutate_reverse_subpath_neighbour(self, current_profit):
+        reverse_origin = self.rs.choice(self.tour_size, 1, replace=False)
+        new_profit, node_pos_in, best_neighbor_node_pos_in_tour = self._induce_reverse_nearest_neighbour(
+            reverse_origin)
+        if new_profit is not None and new_profit >= current_profit:
+            self._commit_reversal(node_pos_in, best_neighbor_node_pos_in_tour)
+            return new_profit
+        return None
+
+    def mutate_item_swap(self, current_profit):
+        first = -1
+        second = -1
+        for i in range(10):
+            first = self.rs.choice(self.ttsp.item_num, 1)[0]
+            if self.kp[first] == 0:
+                break
+        for i in range(10):
+            second = self.rs.choice(self.ttsp.item_num, 1)[0]
+            if self.kp[second] == 1:
+                break
+        if first != -1 and second != -1:
+            kp_changes = [first, second]
+            new_value, new_weight, new_profit = self._induce_profit_kp_change(self.kp,
+                                                                              kp_changes)
+            if new_profit >= current_profit and new_weight <= self.ttsp.knapsack_capacity:
+                self.value = new_value
+                self.weight = new_weight
+                self._commit_kp_changes(self.kp, kp_changes)
+                return new_profit
+
+        return None
+
+    def optimize(self, mutators: dict=None):
+
+        if mutators is None:
+            mutator_names = self.mutators_names
+            mutator_funcs = [self.MUTATORS_defaults[name][0] for name in mutator_names]
+            mutator_probs = np.cumsum([self.MUTATORS_defaults[name][1] for name in mutator_names]) # as jannik put it before
+
+        assert mutator_probs[-1] == 1
+
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
         while not self.stopping_criterion.is_done(profit):
-            knapsack_change = np.random.rand()
-            if knapsack_change > 0.75:
+            mutator = np.argmax(mutator_probs > self.rs.rand())
 
-                # knapsack changes
-                kp_changes = self.kp_selection_func(n)
-                new_value, new_weight, new_profit = self._induce_profit_kp_change(kp, kp_changes)
-
-                if new_profit >= profit and new_weight <= self.ttsp.knapsack_capacity:
-                    self.value = new_value
-                    self.weight = new_weight
-                    profit = new_profit
-                    self._commit_kp_changes(kp, kp_changes)
-                    print('k', profit)
-
-            elif knapsack_change < 0.125:
-                # tausche mit neighbour
-                number_of_changes = np.random.binomial(n=self.tour_size,
-                                                       p=3 / self.tour_size) + 1  # p= ??
-                neighbor_swaps = np.random.choice(self.tour_size, number_of_changes, replace=False)
-                # print(neighbor_swaps)
-                new_profit = self._induce_profit_swap_change(neighbor_swaps)
-
-                if new_profit >= profit:
-                    profit = new_profit
-                    print('tour', profit)
-                    self._commit_city_swaps(neighbor_swaps)
-                    # print(new_profit, calculate_profit(self.tour, self.kp, self.ttsp))
-
-            elif knapsack_change > 0.375:
-
-                reverse_origin = np.random.choice(self.tour_size, 1, replace=False)
-                new_profit, node_pos_in, best_neighbor_node_pos_in_tour = self._induce_reverse_nearest_neighbour(
-                    reverse_origin)
-                if new_profit is not None and new_profit >= profit:
-                    profit = new_profit
-                    # print('***%s' % self.stopping_criterion.steps)
-                    self._commit_reversal(node_pos_in, best_neighbor_node_pos_in_tour)
-                    print('rev', profit)
-                    # print(calculate_profit(self.tour, self.kp, self.ttsp))
-            else:
-                first = -1
-                second = -1
-                for i in range(10):
-                    first = np.random.choice(n, 1)[0]
-                    if self.kp[first] == 0:
-                        break
-                for i in range(10):
-                    second = np.random.choice(n, 1)[0]
-                    if self.kp[second] == 1:
-                        break
-                if first != -1 and second != -1:
-                    kp_changes = [first, second]
-                    new_value, new_weight, new_profit = self._induce_profit_kp_change(kp,
-                                                                                      kp_changes)
-                    if new_profit >= profit and new_weight <= self.ttsp.knapsack_capacity:
-                        self.value = new_value
-                        self.weight = new_weight
-                        profit = new_profit
-                        self._commit_kp_changes(kp, kp_changes)
-                        print('swap', profit)
+            new_profit = self.mutator_funcs[mutator](current_profit=profit)
+            if new_profit is not None:
+                profit = new_profit
 
         profit = calculate_profit(self.tour, self.kp, self.ttsp)
 
