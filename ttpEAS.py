@@ -46,17 +46,17 @@ class OnePlusOneEA():
             node = self.tour[i]
             self.node_pos_in_tour[node] = i
 
-        self.MUTATORS_defaults  = {
-            'kp_swap_item': (self.mutate_item_swap,0.25),
-            'kp_flip_item' : (self.mutate_kp_flip,0.125),
-            'tour_city_swap': (self.mutate_city_swap,0.25),
-            'tour_reverse_subpath_neighbour': (self.mutate_reverse_subpath_neighbour,0.375),
-            'tour_reverse_subpath_random': (self.mutate_reverse_subpath_random,0),
+        self.MUTATORS_defaults = {
+            'kp_swap_item': (self.mutate_item_swap, 0.25),
+            'kp_flip_item': (self.mutate_kp_flip, 0.125),
+            'tour_city_swap': (self.mutate_city_swap, 0.25),
+            'tour_reverse_subpath_neighbour': (self.mutate_reverse_subpath_neighbour, 0.375),
+            'tour_reverse_subpath_random': (self.mutate_reverse_subpath_random, 0),
         }
 
         self.mutators_names = list(self.MUTATORS_defaults.keys())
         self.mutator_funcs = [self.MUTATORS_defaults[n][0] for n in self.mutators_names]
-        
+
         self.rs = np.random.RandomState(seed)
 
     def init_rent(self):
@@ -149,15 +149,6 @@ class OnePlusOneEA():
             else:
                 self.city_weights[self.ttsp.item_node[item]] += self.ttsp.item_weight[item]
 
-        """
-        i - 1->1
-        i+1 - i   . 2->3
-        i+2 - i+1  - i. 3->2
-        i+3 - i +2 - i+1. 4->4
-        a) b) c) 
-        
-        """
-
     def _commit_city_swaps(self, tour_city_swaps):
 
         swap_phase1 = False
@@ -173,7 +164,6 @@ class OnePlusOneEA():
 
             elif swap_phase2:
                 swap_phase2 = False
-
 
             elif (i != self.tour_size - 2 and i != self.tour_size - 1) and i in tour_city_swaps:
                 tmp = city_ip1
@@ -205,25 +195,25 @@ class OnePlusOneEA():
     def mutate_city_swap(self, current_profit):
 
         number_of_changes = self.rs.binomial(n=self.tour_size,
-                                               p=3 / self.tour_size) + 1  # p= ??
+                                             p=3 / self.tour_size) + 1  # p= ??
         neighbor_swaps = self.rs.choice(self.tour_size, number_of_changes, replace=False)
 
         new_profit = self._induce_profit_swap_change(neighbor_swaps)
         if new_profit >= current_profit:
             self._commit_city_swaps(neighbor_swaps)
-            return  new_profit
+            return new_profit
 
         return None
 
     def mutate_reverse_subpath_random(self, current_profit):
         a = self.rs.choice(self.tour_size, replace=False)
         b = self.rs.choice(self.tour_size, replace=False)
-        first = min(a,b)
-        second = max(a,b)
+        first = min(a, b)
+        second = max(a, b)
 
         if first != 0 and second != self.tour_size and first + 1 < second:
 
-            new_profit = self._induce_reverse_subpath(first,second)
+            new_profit = self._induce_reverse_subpath(first, second)
             if new_profit is not None and new_profit >= current_profit:
                 self._commit_reversal(first, second)
                 return new_profit
@@ -261,12 +251,13 @@ class OnePlusOneEA():
 
         return None
 
-    def optimize(self, mutators: dict=None):
+    def optimize(self, mutators: dict = None):
 
         if mutators is None:
             mutator_names = self.mutators_names
             mutator_funcs = [self.MUTATORS_defaults[name][0] for name in mutator_names]
-            mutator_probs = np.cumsum([self.MUTATORS_defaults[name][1] for name in mutator_names]) # as jannik put it before
+            mutator_probs = np.cumsum(
+                [self.MUTATORS_defaults[name][1] for name in mutator_names])  # as jannik put it before
 
         assert mutator_probs[-1] == 1
 
