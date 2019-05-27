@@ -5,6 +5,7 @@ from glob import iglob
 
 import gc
 import pandas as pd
+from scipy.spatial import KDTree
 
 from knapsack_heuristics import Greedy
 from model import TTSP
@@ -15,6 +16,7 @@ import numpy as np
 import timeit
 from ttpEAS import OnePlusOneEA
 from TestCase import TestCase
+import matplotlib.pyplot as plt
 
 
 def positional_array(ttsp_permutation):
@@ -143,10 +145,15 @@ def save_ea_performance(df, problem: str, init_profit, final_profit, test_case: 
 
 
 if __name__ == '__main__':
-    problems = ['a280_n279', 'a280_n2790', 'a280_n1395',
-                'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
-                'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
+
+   # problems = ['a280_n279', 'a280_n2790', 'a280_n1395',
+    #            'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
+     #           'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
+    #'a280_n279', 'a280_n2790',
     # Todo: KEEP THIS CLEAN!
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
-    run_ea_for(problems, 1)
+    #run_ea_for(problems, 1)
+    problems = ['fnl4461_n44600']
+
+

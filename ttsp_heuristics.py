@@ -44,6 +44,7 @@ class greedy_ttsp:
             assignment[item] = 1 - assignment[item]
             new_profit = profit(tour, assignment, self.ttsp)
             if new_profit > prof:
+                print(prof)
                 prof = new_profit
             else:
                 assignment[item] = 1 - assignment[item]
@@ -71,11 +72,11 @@ class greedy_ttsp:
         actual_profit = [0] * self.ttsp.item_num
         v = (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity
         for item in range(self.ttsp.item_num):
-            speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
-            actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
-                                                              * speed_loss) + (self.ttsp.renting_ratio * dist[
-                                       self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
-            #actual_profit[item] = (self.testCoefficient(item, coefficient, dist),item)
+            #speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
+            #actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
+              #                                                * speed_loss) + (self.ttsp.renting_ratio * dist[
+              #                         self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
+            actual_profit[item] = (self.testCoefficient(item, coefficient, dist),item)
             #actual_profit[item] = (self.opt_dist(item, dist, v), item)
         actual_profit.sort()
         #print(actual_profit)
@@ -98,7 +99,7 @@ class greedy_ttsp:
                 #print(profit(self.ttsp_permutation, assignment, self.ttsp))
                 if count % factor == 0:
                     current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
-                    print('c', current_profit, max_val)
+                    #print('c', current_profit, max_val)
                     if current_profit < max_val:
                         for item in last_i:
                             assignment[item] = 0
