@@ -2,14 +2,14 @@ import ast
 import os
 
 import numpy as np
-from scipy.spatial import KDTree
+from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
 
-problems = ['pla33810_n33809']
+problems = ['pla33810_n338090']
 # problems = ['a280_n279', 'a280_n2790', 'a280_n1395',
     #            'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
      #           'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
@@ -55,7 +55,7 @@ for problem in problems:
             tour_c = ttsp_permutation.copy()
             k_c = knapsack_assignment.copy()
             greedy = greedy_ttsp(ttsp, ttsp_permutation)
-            tree = KDTree(ttsp.node_coord)
+            tree = cKDTree(ttsp.node_coord)
             for k in reversed(range(1,ttsp.dim-1)):
                 #print(k)
                 for j in tree.query(ttsp.node_coord[ttsp_permutation[k],:], 10)[1]:
