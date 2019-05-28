@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 from scipy.spatial import KDTree
+import matplotlib.pyplot as plt
 
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
