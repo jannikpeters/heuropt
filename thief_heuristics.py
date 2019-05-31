@@ -54,10 +54,6 @@ def save_result_old(route, knapsack, filename, profit, fact,renting_ratio, ea='g
 
 def save_result(solution, filename):
 
-
-    while len(solution) < 100:
-        solution.append(solution[0])
-
     f_str = ''
     x_str = ''
     for r,k, kp_val, tour_length in solution:
@@ -126,11 +122,12 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio_st
                 route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 solutions.append((route, knapsack, kp_val, rent)) # put more in here for more solutions
-                print(solutions)
                 fact = round(fact + fact_steps, 5)
             renting_ratio += renting_ratio_steps
+
+        print(len(solutions))
+        print([t for a,b,c, t in solutions])
         save_result(solutions, problem)
-        #print(solutions[2:3])
 
 def run_ea_for(problems, timeout_min):
     df = pd.DataFrame(columns=['problem_name', 'init_profit',
