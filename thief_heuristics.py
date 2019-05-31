@@ -67,10 +67,10 @@ def save_result(route, knapsack, filename, kp_val, tour_length):
 
     if not os.path.exists('gecco_solutions/' + filename):
         os.makedirs('gecco_solutions/' + filename)
-    with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename + '.x',
+    with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename.replace('_','-') + '.x',
               'w') as f:
         f.write(f_str)
-    with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename + '.f',
+    with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename.replace('_','-') + '.f',
               'w') as f:
         f.write(x_str)
 
