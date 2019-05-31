@@ -165,7 +165,7 @@ def far_away_neigbours(ttsp,tour,tour_coords,file, ax):
 
 if __name__ == '__main__':
 
-    rootdir = Path('gecc')
+    rootdir = Path('gecco_problems')
     files = [f for f in rootdir.glob('**/*') if f.is_file()]
 
 
