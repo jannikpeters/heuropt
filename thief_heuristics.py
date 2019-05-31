@@ -52,17 +52,16 @@ def save_result_old(route, knapsack, filename, profit, fact,renting_ratio, ea='g
         solution = create_solution_string(route, knapsack)
         f.write(solution)
 
-def save_result(route, knapsack, filename, kp_val, tour_length):
+def save_result(solution, filename):
 
-    solution = [(route,knapsack)]
 
     while len(solution) < 100:
         solution.append(solution[0])
 
     f_str = ''
     x_str = ''
-    for r,k in solution:
-        f_str += (create_solution_string(r,k)) + '\n'
+    for r,k, kp_val, tour_length in solution:
+        f_str += (create_solution_string(r, k)) + '\n'
         x_str += (str(tour_length) + ' ' + str(kp_val) + '\n')
 
     if not os.path.exists('gecco_solutions/' + filename):
@@ -123,7 +122,8 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio):
             route = ttsp_permutation_original.copy()
             route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
             kp_val, rent = profit(route, knapsack, ttsp, True)
-            save_result(route, knapsack, problem, kp_val, rent)
+            solution = [(route, knapsack, kp_val, rent)]
+            save_result(solution, problem)
             fact = round(fact + fact_steps, 5)
 
 
