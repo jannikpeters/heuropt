@@ -31,14 +31,9 @@ def print_sol(ttsp_permutation, knapsack_assigment):
 
 
 def create_solution_string(ttsp_permutation, knapsack_assigment):
-    ttsp = [x + 1 for x in ttsp_permutation]
-    knapsack = []
-    for i in range(len(knapsack_assigment)):
-        if knapsack_assigment[i] == 1:
-            knapsack.append(1)
-        else:
-            knapsack.append(0)
-    return str(ttsp)[1:-1] + '\n' + str(knapsack)[1:-1] + '\n'
+    ttsp = ttsp_permutation + 1
+    knapsack = knapsack_assigment.astype(int)
+    return ' '.join([str(i) for i in ttsp]) + ' '.join([str(i) for i in knapsack]) + '\n'
 
 
 def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
@@ -47,7 +42,7 @@ def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     return ttsp_permutation, knapsack_assignment, p
 
 
-def save_result(route, knapsack, filename, profit, fact,renting_ratio, ea='greed'):
+def save_result_old(route, knapsack, filename, profit, fact,renting_ratio, ea='greed'):
     if not os.path.exists('gecco_solutions/' + filename):
         os.makedirs('gecco_solutions/' + filename)
     with open('gecco_solutions/' + filename + '/' + filename +  '_r' + str(renting_ratio) + '_'+ ea + '_p' + str(
@@ -74,7 +69,7 @@ def save_result(route, knapsack, filename, kp_val, tour_length):
 def read_init_solution_from(solutions_dir, problem_name):
     solution_file = solutions_dir + '/' + problem_name.split('.')[0] + '.txt'
     gc.collect() # for the big ttsps
-    ttsp = TTSP('gecc/' + problem_name + '.ttp')
+    ttsp = TTSP('gecco_problems/' + problem_name + '.ttp')
     with open(solution_file, 'r') as fp:
         ttsp_permutation = fp.readline()
         ttsp_permutation = ast.literal_eval(ttsp_permutation)
