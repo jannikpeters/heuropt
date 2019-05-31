@@ -175,7 +175,8 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['a280_n279']
-    run_greedy_for(problems, 8,8.1,0.2,np.arange(0.1, 15, 0.2))
+    problems = ['pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
+               #'a280_n279', 'a280_n2790', 'a280_n1395'           ]
+    run_greedy_for(problems, 8,8.1,0.2,np.arange(0.1, 200, 10))
 
 
