@@ -110,22 +110,27 @@ def return_bin_vals(n, p):
     return np.random.choice(n, number_of_changes, replace=False)
 
 
-def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio):
+def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio_start, renting_ratio_stop, renting_ratio_steps):
     for problem in problems:
         print('Greedy For:')
         fact = fact_start
-        while fact < fact_stop:
-            ttsp = None # To free memory from old ttsps
-            ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
-                'solutions', problem)
-            ttsp.renting_ratio = renting_ratio
-            route = ttsp_permutation_original.copy()
-            route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
-            kp_val, rent = profit(route, knapsack, ttsp, True)
-            solution = [(route, knapsack, kp_val, rent)] # put more in here for more solutions
-            save_result(solution, problem)
-            fact = round(fact + fact_steps, 5)
-
+        renting_ratio = renting_ratio_start
+        solutions = []
+        ttsp = None  # To free memory from old ttsps
+        ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
+            'solutions', problem)
+        while renting_ratio < renting_ratio_stop:
+            while fact < fact_stop:
+                ttsp.renting_ratio = renting_ratio
+                route = ttsp_permutation_original.copy()
+                route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                solutions.append((route, knapsack, kp_val, rent)) # put more in here for more solutions
+                print(solutions)
+                fact = round(fact + fact_steps, 5)
+            renting_ratio += renting_ratio_steps
+        save_result(solutions, problem)
+        #print(solutions[2:3])
 
 def run_ea_for(problems, timeout_min):
     df = pd.DataFrame(columns=['problem_name', 'init_profit',
@@ -176,9 +181,6 @@ if __name__ == '__main__':
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
     problems = ['a280_n279']
-    rr = 0.1
-    while rr < 15:
-        run_greedy_for(problems, 8,8.1,0.2,rr)
-        rr += 0.4
+    run_greedy_for(problems, 8,8.1,0.2,0.1, 15, 0.2)
 
 
