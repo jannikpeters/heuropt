@@ -122,7 +122,7 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio):
             route = ttsp_permutation_original.copy()
             route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
             kp_val, rent = profit(route, knapsack, ttsp, True)
-            solution = [(route, knapsack, kp_val, rent)]
+            solution = [(route, knapsack, kp_val, rent)] # put more in here for more solutions
             save_result(solution, problem)
             fact = round(fact + fact_steps, 5)
 
