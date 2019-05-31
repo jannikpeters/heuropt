@@ -37,7 +37,7 @@ class greedy_ttsp:
 
 
     def testCoefficient(self, item, factor, dist):
-        return (self.ttsp.item_profit[item]**factor)/((self.ttsp.item_weight[item]**factor)*3*dist[self.ttsp.item_node[item]])
+        return (self.ttsp.item_profit[item]**factor)/((self.ttsp.item_weight[item]**factor)*dist[self.ttsp.item_node[item]])
     def local_search(self, assignment, tour):
         prof = profit(tour, assignment, self.ttsp)
         for item in range(self.ttsp.item_num):

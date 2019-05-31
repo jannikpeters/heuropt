@@ -35,8 +35,10 @@ def create_solution_string(ttsp_permutation, knapsack_assigment):
     knapsack = []
     for i in range(len(knapsack_assigment)):
         if knapsack_assigment[i] == 1:
-            knapsack.append(i + 1)
-    return str(ttsp) + '\n' + str(knapsack)
+            knapsack.append(1)
+        else:
+            knapsack.append(0)
+    return str(ttsp)[1:-1] + '\n' + str(knapsack)[1:-1] + '\n'
 
 
 def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
@@ -45,15 +47,28 @@ def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     return ttsp_permutation, knapsack_assignment, p
 
 
-def save_result(route, knapsack, filename, profit, fact, ea='greed'):
+def save_result(route, knapsack, filename, profit, fact,renting_ratio, ea='greed'):
     if not os.path.exists('gecco_solutions/' + filename):
         os.makedirs('gecco_solutions/' + filename)
-    with open('gecco_solutions/' + filename + '/' + filename + '_' + ea + '_p' + str(
+    with open('gecco_solutions/' + filename + '/' + filename +  '_r' + str(renting_ratio) + '_'+ ea + '_p' + str(
             int(round(profit))) + '_c' +
-              str(fact) + '_t' + str(round(time.time())),
+              str(fact) + '_t' + str(round(time.time())) ,
               'w') as f:
         solution = create_solution_string(route, knapsack)
         f.write(solution)
+
+def save_result(route, knapsack, filename, kp_val, tour_length):
+    if not os.path.exists('gecco_solutions/' + filename):
+        os.makedirs('gecco_solutions/' + filename)
+    with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename + '.x',
+              'a') as f:
+        solution = create_solution_string(route, knapsack)
+        f.write(solution)
+        f.write('\n')
+    with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename + '.f',
+              'a') as f:
+        f.write(str(tour_length) + ' ')
+        f.write(str(kp_val) + '\n')
 
 
 def read_init_solution_from(solutions_dir, problem_name):
@@ -92,7 +107,7 @@ def return_bin_vals(n, p):
     return np.random.choice(n, number_of_changes, replace=False)
 
 
-def run_greedy_for(problems, fact_start, fact_stop, fact_steps):
+def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio):
     for problem in problems:
         print('Greedy For:')
         fact = fact_start
@@ -100,9 +115,11 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps):
             ttsp = None # To free memory from old ttsps
             ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
                 'solutions', problem)
+            ttsp.renting_ratio = renting_ratio
             route = ttsp_permutation_original.copy()
             route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
-            save_result(route, knapsack, problem, prof, fact, 'greed')
+            kp_val, rent = profit(route, knapsack, ttsp, True)
+            save_result(route, knapsack, problem, kp_val, rent)
             fact = round(fact + fact_steps, 5)
 
 
@@ -154,6 +171,10 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['fnl4461_n44600']
+    problems = ['a280_n279']
+    rr = 0.1
+    while rr < 15:
+        run_greedy_for(problems, 8,8.1,0.2,rr)
+        rr += 0.4
 
 
