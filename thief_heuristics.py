@@ -33,7 +33,7 @@ def print_sol(ttsp_permutation, knapsack_assigment):
 def create_solution_string(ttsp_permutation, knapsack_assigment):
     ttsp = ttsp_permutation + 1
     knapsack = knapsack_assigment.astype(int)
-    return ' '.join([str(i) for i in ttsp]) + ' '.join([str(i) for i in knapsack]) + '\n'
+    return ' '.join([str(i) for i in ttsp]) + '\n' + ' '.join([str(i) for i in knapsack]) + '\n'
 
 
 def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
@@ -53,17 +53,26 @@ def save_result_old(route, knapsack, filename, profit, fact,renting_ratio, ea='g
         f.write(solution)
 
 def save_result(route, knapsack, filename, kp_val, tour_length):
+
+    solution = [(route,knapsack)]
+
+    while len(solution) < 100:
+        solution.append(solution[0])
+
+    f_str = ''
+    x_str = ''
+    for r,k in solution:
+        f_str += (create_solution_string(r,k)) + '\n'
+        x_str += (str(tour_length) + ' ' + str(kp_val) + '\n')
+
     if not os.path.exists('gecco_solutions/' + filename):
         os.makedirs('gecco_solutions/' + filename)
     with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename + '.x',
-              'a') as f:
-        solution = create_solution_string(route, knapsack)
-        f.write(solution)
-        f.write('\n')
+              'w') as f:
+        f.write(f_str)
     with open('gecco_solutions/' + filename + '/' + 'Gruppe B_' +  filename + '.f',
-              'a') as f:
-        f.write(str(tour_length) + ' ')
-        f.write(str(kp_val) + '\n')
+              'w') as f:
+        f.write(x_str)
 
 
 def read_init_solution_from(solutions_dir, problem_name):
