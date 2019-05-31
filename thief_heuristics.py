@@ -106,16 +106,15 @@ def return_bin_vals(n, p):
     return np.random.choice(n, number_of_changes, replace=False)
 
 
-def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio_start, renting_ratio_stop, renting_ratio_steps):
+def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios):
     for problem in problems:
         print('Greedy For:')
         fact = fact_start
-        renting_ratio = renting_ratio_start
         solutions = []
         ttsp = None  # To free memory from old ttsps
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
             'solutions', problem)
-        while renting_ratio < renting_ratio_stop:
+        for renting_ratio in ratios:
             while fact < fact_stop:
                 ttsp.renting_ratio = renting_ratio
                 route = ttsp_permutation_original.copy()
@@ -123,8 +122,7 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, renting_ratio_st
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 solutions.append((route, knapsack, kp_val, rent)) # put more in here for more solutions
                 fact = round(fact + fact_steps, 5)
-            renting_ratio += renting_ratio_steps
-
+            fact = fact_start
         print(len(solutions))
         print([t for a,b,c, t in solutions])
         save_result(solutions, problem)
@@ -178,6 +176,6 @@ if __name__ == '__main__':
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
     problems = ['a280_n279']
-    run_greedy_for(problems, 8,8.1,0.2,0.1, 15, 0.2)
+    run_greedy_for(problems, 8,8.1,0.2,np.arange(0.1, 15, 0.2))
 
 
