@@ -1,6 +1,9 @@
 import math
+import sys
 
-from model import TTSP
+from numba import njit
+
+from model import TTSP, TTP_OPT
 from evaluation_function import profit, dist_to_opt
 import numpy as np
 from random import randint
@@ -33,14 +36,22 @@ class NeighrestNeighbors:
         return permutation
 
 
+@njit
+def test_coefficient_opt(item, factor, dist, ttp: TTP_OPT):
+    return (ttp.item_profit[item] ** factor) / (
+            (ttp.item_weight[item] ** factor) * dist[ttp.item_node[item]])
+
 class greedy_ttsp:
     def __init__(self, ttsp: TTSP, ttsp_permutation):
         self.ttsp = ttsp
         self.ttsp_permutation = ttsp_permutation
 
-    def testCoefficient(self, item, factor, dist):
+    def testCoefficient_old(self, item, factor, dist):
         return (self.ttsp.item_profit[item] ** factor) / (
                     (self.ttsp.item_weight[item] ** factor) * dist[self.ttsp.item_node[item]])
+
+    def testCoefficient(self, item, factor, dist):
+        return test_coefficient_opt(item, factor, dist, self.ttsp.ttp_opt)
 
     def local_search(self, assignment, tour):
         prof = profit(tour, assignment, self.ttsp)

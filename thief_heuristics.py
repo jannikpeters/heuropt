@@ -5,6 +5,7 @@ from glob import iglob
 # from pygmo import *
 import gc
 import pandas as pd
+from numba import njit
 from scipy.spatial import KDTree
 import matplotlib.pyplot as plt
 from functools import partial
@@ -73,9 +74,21 @@ def print_sol(ttsp_permutation, knapsack_assigment):
 
 
 def create_solution_string(ttsp_permutation, knapsack_assigment):
+    return create_solution_opt(ttsp_permutation, knapsack_assigment)
+
+
+def create_solution_string_old(ttsp_permutation, knapsack_assigment):
     ttsp = ttsp_permutation + 1
     knapsack = knapsack_assigment.astype(int)
     return ' '.join([str(i) for i in ttsp]) + '\n' + ' '.join([str(i) for i in knapsack]) + '\n'
+
+
+def create_solution_opt(ttsp_permutation, knapsack_assigment):
+    ttsp = ttsp_permutation + 1
+    knapsack = knapsack_assigment.astype(int)
+    res = ' '.join(ttsp.astype(np.unicode_)) + '\n' + \
+          ' '.join(knapsack.astype(np.dtype(np.unicode_))) + '\n'
+    return res
 
 
 def save_result_old(route, knapsack, filename, profit, fact, renting_ratio, ea='greed'):
@@ -142,6 +155,7 @@ def return_bin_vals(n, p):
     number_of_changes = max(1, np.random.binomial(n=n, p=p))
     return np.random.choice(n, number_of_changes, replace=False)
 
+
 def results_required(problem):
     if 'a280' in problem:
         return 100
@@ -151,29 +165,20 @@ def results_required(problem):
         return 20
 
 
-def generate_ratios_lin(factor, problem):
-    results = results_required(problem)
-    ratios = np.arange(0, factor * results, factor)
-    return ratios, 'linear_m=' + str(factor)
-
-
-def generate_ratios_exp(factor, problem):
-    results = results_required(problem)
-    if factor > 0.04:
-        print('WARNING factor might be to large')
-    ratios = np.array([math.exp(factor * x) for x in range(0, results)])
-    return ratios, 'exp_b=' + str(factor)
-
-
 def plot_fronts(hypervol: dict, problem):
     plt.xlabel('time')
     plt.ylabel('negative profit')
     plt.title(problem)
     for label, res in hypervol.items():
-        plt.scatter(*zip(*res), label=label, alpha=0.1)
+        if 'exp' in label:
+            marker = '*'
+        if 'lin' in label:
+            marker = '.'
+        else:
+            marker = '+'
+        plt.scatter(*zip(*res), label=label, alpha=0.4, marker=marker)
     plt.legend()
     plt.show()
-
 
 
 def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
@@ -182,7 +187,16 @@ def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     return ttsp_permutation, knapsack_assignment, p
 
 
-def run_for(problems, coeff_funcs: list, plot=False):
+def performance_factor(problem):
+    if 'a280' in problem:
+        return 20
+    if 'fnl4461' in problem:
+        return 200
+    if 'pla33810' in problem:
+        return 500
+
+
+def run_for(problems, coeff_ratio_funcs: list, plot=False, store_res=True):
     for problem in problems:
         print('Greedy For:', problem)
         solutions = []
@@ -191,17 +205,21 @@ def run_for(problems, coeff_funcs: list, plot=False):
             'solutions', problem)
         hypervol = {}
 
-        for coeff_func in coeff_funcs:
-            coeffs, label = coeff_func(problem)
+        for func in coeff_ratio_funcs:
+            coeffs, ratios, label = func(problem)
             hypervol[label] = []
-            for coeff in coeffs:
-                #ttsp.renting_ratio = renting_ratio
+            for coeff, ratio in zip(coeffs, ratios):
+                ttsp.renting_ratio = ratio
                 route = ttsp_permutation_original.copy()
-                route, knapsack, prof = run_greedy(ttsp, route, 100, coeff)
+                p_factor = performance_factor(problem)
+                route, knapsack, prof = run_greedy(ttsp, route, p_factor, coeff)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 solutions.append((route, knapsack, kp_val, rent))
                 hypervol[label].append((rent, -kp_val))
-            save_result(solutions, problem) # Will overwrite, thus only store last coff func
+            if store_res:
+                print('Attention saving is substantially slow. Disable if not needed')
+                save_result(solutions, problem)  # Will store all results of one go in a file no
+                # idea why it does not overwrite
         if plot:
             plot_fronts(hypervol, problem)
 
@@ -218,11 +236,53 @@ def run_for(problems, coeff_funcs: list, plot=False):
             ws = hv.least_contributor(ref_point)
             del(hypervol[ws])
             del(solutions[ws])'''
-        #save_result(solutions, problem)
+        # save_result(solutions, problem)
 
         # plt.scatter(*zip(*hypervol))
         # plt.show()
-        #return hypervol
+        # return hypervol
+
+
+def generate_coeffs_lin(factor, ratio, problem):
+    results = results_required(problem)
+    coeffs = np.arange(0, factor * results, factor)
+    return coeffs, [ratio] * len(coeffs), 'linear_m=' + str(factor) + '_rat=' + str(ratio)
+
+
+def generate_coeffs_exp(factor, ratio, problem):
+    results = results_required(problem)
+    if factor > 0.04:
+        print('WARNING factor might be to large')
+    coeffs = np.array([math.exp(factor * x) for x in range(0, results)])
+    return coeffs, [ratio] * len(coeffs), 'exp_b=' + str(factor) + '_rat=' + str(ratio)
+
+
+def generate_ratio_exp(factor, coef, problem):
+    results = results_required(problem)
+    if factor > 0.04:
+        print('WARNING factor might be to large')
+    coeffs = np.array([math.exp(factor * x) for x in range(1, results)])
+    return [coef] * len(coeffs), coeffs, 'fix=' + str(coef) + '_rat_flex_exp=' + str(factor)
+
+
+def generate_ratio_lin(factor, coef, problem):
+    results = results_required(problem)
+    if factor > 0.04:
+        print('WARNING factor might be to large')
+    coeffs = np.array([factor * x for x in range(0, results)])
+    return [coef] * len(coeffs), coeffs, 'fix=' + str(coef) + '_rat_flex_lin=' + str(factor)
+
+
+def generate_generators():
+    # i know, dumb name ;) And also not technically generators ...
+    funcs = []
+    for renting_ratio in [0, 7.2, 50, 300]:
+        funcs.extend([
+            partial(generate_coeffs_lin, 0.1, renting_ratio),
+            partial(generate_coeffs_exp, 0.04, renting_ratio)
+        ])
+    funcs.extend([partial(generate_ratio_exp, 0.02, 7.2), partial(generate_ratio_lin, 1, 7.2)])
+    return funcs
 
 
 if __name__ == '__main__':
@@ -230,10 +290,4 @@ if __name__ == '__main__':
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
 
-    res = run_for(problems,
-                  [partial(generate_ratios_lin, 0.1),
-                   partial(generate_ratios_exp, 0.04)], True)
-
-
-
-
+    res = run_for(problems[:6], generate_generators(), True)
