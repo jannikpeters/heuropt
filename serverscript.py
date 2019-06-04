@@ -4,12 +4,12 @@ import os
 import numpy as np
 from scipy.spatial import KDTree
 import matplotlib.pyplot as plt
-from pygmo import *
+#from pygmo import *
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
 
-problems = ['fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600']
+problems = ['fnl4461_n4460']
 # problems = ['a280_n279', 'a280_n2790', 'a280_n1395',
     #            'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
      #           'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
@@ -21,11 +21,16 @@ for problem in problems:
     solutions = []
     hypervol = []
     rg = 1000
-    for l in range(5):
-        for file in os.listdir('tours/fnltours'):
+    arr = np.array([2**i for i in np.arange(1,15, (15-1)/50)])
+
+    for file in os.listdir('tours/fnltours'):
+        if(file != 'fnl8'):
+            continue
+        for renting_r in arr:
+            print(renting_r)
             dominated = True
             count = 0
-            while dominated and count < 11:
+            while dominated and count < 3:
                 dominated = True
                 count += 1
                 with open('tours/fnltours/' + file, 'r') as fp:
@@ -35,14 +40,14 @@ for problem in problems:
                     ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
                     ttsp_permutation = np.array(ttsp_permutation)
                 fact = 1
-                if(l == 0 or l == 1 ):
+                '''if(l == 0 or l == 1 ):
                     rg = 1000
                 if(l == 2 or l == 3):
                     rg = 100
                 if(l == 4):
-                    rg = 2
-                ttsp.renting_ratio = np.random.uniform(0, rg)
-                ttsp_permutation, knapsack_assignment, prof = run_greedy(ttsp, ttsp_permutation,1, np.random.uniform(1,10))
+                    rg = 2'''
+                ttsp.renting_ratio = renting_r
+                ttsp_permutation, knapsack_assignment, prof = run_greedy(ttsp, ttsp_permutation,1, 7.5)
                 for i in range(1):
                     #ttsp, knapsack_assignment, ttsp_permutation = read_init_solution_from('solutions', problem)
                     val = [ttsp.item_profit[i] / ttsp.item_weight[i] for i in range(ttsp.item_num)]
@@ -132,7 +137,7 @@ for problem in problems:
                     solutions.append((ttsp_permutation, knapsack_assignment, kp_val, rent))  # put more in here for more solutions
                     hypervol.append((rent, -kp_val))
 
-    import matplotlib.pyplot as plt
+    '''import matplotlib.pyplot as plt
 
     plt.scatter(*zip(*hypervol))
     plt.show()
@@ -146,7 +151,7 @@ for problem in problems:
         hv = hypervolume(hypervol)
         ws = hv.least_contributor(ref_point)
         del (hypervol[ws])
-        del (solutions[ws])
+        del (solutions[ws])'''
     save_result(solutions, problem)
-    plt.scatter(*zip(*hypervol))
-    plt.show()
+    #plt.scatter(*zip(*hypervol))
+    #plt.show()
