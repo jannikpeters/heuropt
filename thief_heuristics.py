@@ -261,17 +261,21 @@ def generate_ratio_exp(factor, coef, problem):
     results = results_required(problem)
     if factor > 0.04:
         print('WARNING factor might be to large')
-    coeffs = np.array([math.exp(factor * x) for x in range(1, results)])
-    return [coef] * len(coeffs), coeffs, 'fix=' + str(coef) + '_rat_flex_exp=' + str(factor)
+    ratios = np.array([math.exp(factor * x) for x in range(1, results)])
+    return [coef] * len(ratios), ratios, 'fix=' + str(coef) + '_rat_flex_exp=' + str(factor)
 
 
 def generate_ratio_lin(factor, coef, problem):
     results = results_required(problem)
+    ratios = np.array([factor * x for x in range(0, results)])
+    return [coef] * len(ratios), ratios, 'fix=' + str(coef) + '_rat_flex_lin=' + str(factor)
+
+def gen_lin_ratio_and_rand_coef(factor, coef, problem):
+    results = results_required(problem)
     if factor > 0.04:
         print('WARNING factor might be to large')
-    coeffs = np.array([factor * x for x in range(0, results)])
+    coeffs = np.array([np.random.uniform(0, 10) for _ in range(0, results)])
     return [coef] * len(coeffs), coeffs, 'fix=' + str(coef) + '_rat_flex_lin=' + str(factor)
-
 
 def generate_generators():
     # i know, dumb name ;) And also not technically generators ...
