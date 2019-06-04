@@ -57,10 +57,12 @@ def total_distance(tour: np.ndarray, ttsp: TTSP):
     for i in range(n):
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
-        tij = t(city_i, city_ip1, ttsp, 0)
+        tij = t_opt_zero_weight(city_i, city_ip1, ttsp.dist_cache, ttsp.max_speed)
         cost += tij
     return cost
 
+def test_callout_cost(a, b, c, d):
+    return t_opt_zero_weight(a,b,c,d)
 
 def dist_to_opt(tour: np.ndarray, ttsp: TTSP):
     total_dist = total_distance(tour, ttsp)
@@ -70,7 +72,7 @@ def dist_to_opt(tour: np.ndarray, ttsp: TTSP):
     for i in range(n):
         city_i = tour[i % n]
         city_ip1 = tour[(i + 1) % n]
-        tij = t(city_i, city_ip1, ttsp, 0)
+        tij = t_opt_zero_weight(city_i, city_ip1, ttsp.dist_cache, ttsp.max_speed)
         cost += tij
         dist_to_end[city_ip1] = total_dist - cost
     dist_to_end[tour[0]] = total_dist
@@ -88,9 +90,13 @@ def knapsack_value(assignment, ttspModel):
 
 def t(city_i: int, city_j: int, ttsp: TTSP, current_weight):
     # Todo: if someone finds a way to make this faster, go ahead! It is the most called function
+    print('Warining! this is deprecated use opt version')
     return ttsp.dist(city_i, city_j) / (ttsp.max_speed - current_weight *
                                         ttsp.normalizing_constant)
 
+@njit
+def t_opt_zero_weight(city_i: int, city_j: int, dist_matr: np.ndarray, max_speed: int):
+    return dist_matr[city_i, city_j] / max_speed
 
 def added_weight_at(city_i: int, bit_string: np.ndarray, ttsp: TTSP) -> np.int:
     indexes_items_in_city = ttsp.indexes_items_in_city[city_i]

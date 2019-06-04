@@ -51,6 +51,7 @@ class greedy_ttsp:
                     (self.ttsp.item_weight[item] ** factor) * dist[self.ttsp.item_node[item]])
 
     def testCoefficient(self, item, factor, dist):
+        print('Warning: Deprecated, use opt version')
         return test_coefficient_opt(item, factor, dist, self.ttsp.ttp_opt)
 
     def local_search(self, assignment, tour):
@@ -93,7 +94,7 @@ class greedy_ttsp:
             # actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
             #                                                * speed_loss) + (self.ttsp.renting_ratio * dist[
             #                         self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
-            actual_profit[item] = (self.testCoefficient(item, coefficient, dist), item)
+            actual_profit[item] = (test_coefficient_opt(item, coefficient, dist, self.ttsp.ttp_opt), item)
             # actual_profit[item] = (self.opt_dist(item, dist, v), item)
         actual_profit.sort()
         # print(actual_profit)
