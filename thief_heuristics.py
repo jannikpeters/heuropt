@@ -172,7 +172,7 @@ def plot_fronts(hypervol: dict, problem):
     for label, res in hypervol.items():
         if 'exp' in label:
             marker = '*'
-        if 'lin' in label:
+        elif 'lin' in label:
             marker = '.'
         else:
             marker = '+'
@@ -197,6 +197,9 @@ def performance_factor(problem):
 
 
 def run_for(problems, coeff_ratio_funcs: list, plot=False, store_res=True):
+    if not store_res:
+        print('ATTENTION: To increase performance storing results is turned off!')
+
     for problem in problems:
         print('Greedy For:', problem)
         solutions = []
@@ -270,12 +273,11 @@ def generate_ratio_lin(factor, coef, problem):
     ratios = np.array([factor * x for x in range(0, results)])
     return [coef] * len(ratios), ratios, 'fix=' + str(coef) + '_rat_flex_lin=' + str(factor)
 
-def gen_lin_ratio_and_rand_coef(factor, coef, problem):
+def gen_lin_ratio_and_rand_coef(problem):
     results = results_required(problem)
-    if factor > 0.04:
-        print('WARNING factor might be to large')
     coeffs = np.array([np.random.uniform(0, 10) for _ in range(0, results)])
-    return [coef] * len(coeffs), coeffs, 'fix=' + str(coef) + '_rat_flex_lin=' + str(factor)
+    ratios = [0,10, 20, 100, 1000]*results
+    return coeffs, ratios[:results] , 'coefs=rand_rat=rand'
 
 def generate_generators():
     # i know, dumb name ;) And also not technically generators ...
@@ -285,7 +287,11 @@ def generate_generators():
             partial(generate_coeffs_lin, 0.1, renting_ratio),
             partial(generate_coeffs_exp, 0.04, renting_ratio)
         ])
-    funcs.extend([partial(generate_ratio_exp, 0.02, 7.2), partial(generate_ratio_lin, 1, 7.2)])
+    funcs.extend([
+        partial(generate_ratio_exp, 0.02, 7.2),
+        partial(generate_ratio_lin, 1, 7.2),
+        gen_lin_ratio_and_rand_coef
+    ])
     return funcs
 
 
@@ -294,4 +300,4 @@ if __name__ == '__main__':
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
 
-    res = run_for(problems[:6], generate_generators(), True)
+    run_for(problems[:6], generate_generators(), True, False)
