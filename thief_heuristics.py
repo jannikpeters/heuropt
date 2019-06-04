@@ -193,9 +193,9 @@ def run_for(problems, ratio_funcs: list, plot=False):
             ratios, label = ratio_func(problem)
             hypervol[label] = []
             for renting_ratio in ratios:
-                ttsp.renting_ratio = renting_ratio
+                #ttsp.renting_ratio = renting_ratio
                 route = ttsp_permutation_original.copy()
-                route, knapsack, prof = run_greedy(ttsp, route, 100, np.random.uniform(1,10))
+                route, knapsack, prof = run_greedy(ttsp, route, 100, renting_ratio)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 solutions.append((route, knapsack, kp_val, rent))
                 hypervol[label].append((rent, -kp_val))
@@ -228,8 +228,8 @@ if __name__ == '__main__':
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
 
     res = run_for(problems[:5],
-                  [partial(generate_ratios_lin, 1),
-                   partial(generate_ratios_exp, 0.5)], True)
+                  [partial(generate_ratios_lin, 10000),
+                   partial(generate_ratios_exp, 0.1)], True)
 
 
 
