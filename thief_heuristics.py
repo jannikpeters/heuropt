@@ -159,14 +159,16 @@ def generate_ratios_lin(factor, problem):
 
 def generate_ratios_exp(factor, problem):
     results = results_required(problem)
+    if factor > 0.04:
+        print('WARNING factor might be to large')
     ratios = np.array([math.exp(factor * x) for x in range(0, results)])
     return ratios, 'exp_b=' + str(factor)
 
 
-def plot_fronts(hypervol: dict):
+def plot_fronts(hypervol: dict, problem):
     plt.xlabel('time')
     plt.ylabel('negative profit')
-    plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
+    plt.title(problem)
     for label, res in hypervol.items():
         plt.scatter(*zip(*res), label=label, alpha=0.1)
     plt.legend()
@@ -180,27 +182,28 @@ def run_greedy(ttsp: TTSP, ttsp_permutation: np.ndarray, factor, coeff):
     return ttsp_permutation, knapsack_assignment, p
 
 
-def run_for(problems, ratio_funcs: list, plot=False):
+def run_for(problems, coeff_funcs: list, plot=False):
     for problem in problems:
-        print('Greedy For:')
+        print('Greedy For:', problem)
         solutions = []
         ttsp = None  # To free memory from old ttsps
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
             'solutions', problem)
         hypervol = {}
 
-        for ratio_func in ratio_funcs:
-            ratios, label = ratio_func(problem)
+        for coeff_func in coeff_funcs:
+            coeffs, label = coeff_func(problem)
             hypervol[label] = []
-            for renting_ratio in ratios:
+            for coeff in coeffs:
                 #ttsp.renting_ratio = renting_ratio
                 route = ttsp_permutation_original.copy()
-                route, knapsack, prof = run_greedy(ttsp, route, 100, renting_ratio)
+                route, knapsack, prof = run_greedy(ttsp, route, 100, coeff)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 solutions.append((route, knapsack, kp_val, rent))
                 hypervol[label].append((rent, -kp_val))
+            save_result(solutions, problem) # Will overwrite, thus only store last coff func
         if plot:
-            plot_fronts(hypervol)
+            plot_fronts(hypervol, problem)
 
         '''plt.scatter(*zip(*hypervol))
         plt.show()'''
@@ -215,11 +218,11 @@ def run_for(problems, ratio_funcs: list, plot=False):
             ws = hv.least_contributor(ref_point)
             del(hypervol[ws])
             del(solutions[ws])'''
-        save_result(solutions, problem)
+        #save_result(solutions, problem)
 
         # plt.scatter(*zip(*hypervol))
         # plt.show()
-        return hypervol
+        #return hypervol
 
 
 if __name__ == '__main__':
@@ -227,9 +230,9 @@ if __name__ == '__main__':
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
 
-    res = run_for(problems[:5],
-                  [partial(generate_ratios_lin, 10000),
-                   partial(generate_ratios_exp, 0.1)], True)
+    res = run_for(problems,
+                  [partial(generate_ratios_lin, 0.1),
+                   partial(generate_ratios_exp, 0.04)], True)
 
 
 
