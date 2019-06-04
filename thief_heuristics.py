@@ -2,7 +2,7 @@ import os
 import random
 import time
 from glob import iglob
-
+from pygmo import *
 import gc
 import pandas as pd
 from scipy.spatial import KDTree
@@ -114,18 +114,37 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios):
         ttsp = None  # To free memory from old ttsps
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from(
             'solutions', problem)
+        hypervol = []
         for renting_ratio in ratios:
             while fact < fact_stop:
                 ttsp.renting_ratio = renting_ratio
                 route = ttsp_permutation_original.copy()
-                route, knapsack, prof = run_greedy(ttsp, route, int(ttsp.dim / 250), fact)
+                route, knapsack, prof = run_greedy(ttsp, route, 100, np.random.uniform(1,10))
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 solutions.append((route, knapsack, kp_val, rent)) # put more in here for more solutions
+                hypervol.append((rent, -kp_val))
                 fact = round(fact + fact_steps, 5)
             fact = fact_start
+
+        '''plt.scatter(*zip(*hypervol))
+        plt.show()'''
         print(len(solutions))
         print([t for a,b,c, t in solutions])
+        #save_result(solutions, problem)
+        '''ref_point = [10000, -0.0]
+        left = len(solutions)-100
+        actual_solutions = []
+        for i in range(left):
+            hv = hypervolume(hypervol)
+            ws = hv.least_contributor(ref_point)
+            del(hypervol[ws])
+            del(solutions[ws])'''
         save_result(solutions, problem)
+
+        #plt.scatter(*zip(*hypervol))
+        #plt.show()
+        return hypervol
+
 
 def run_ea_for(problems, timeout_min):
     df = pd.DataFrame(columns=['problem_name', 'init_profit',
@@ -175,8 +194,21 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
-               #'a280_n279', 'a280_n2790', 'a280_n1395'           ]
-    run_greedy_for(problems, 8,8.1,0.2,np.arange(0.1, 200, 10))
+    problems = ['a280_n279']
+               #'a280_n279', 'a280_n2790', 'a280_n1395'
+   # ]
+    import matplotlib.pyplot as plt
+    plt.xlabel('time')
+    plt.ylabel('negative profit')
+    plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
+    #arr = np.array([2**i for i in np.arange(0,20, 0.2)])
+    #plt.scatter(*zip(*run_greedy_for(problems, 2.3, 2.4, 4, arr)), label='Range 2')
+    #plt.scatter(*zip(*run_greedy_for(problems, 2.3, 2.4, 4, np.arange(0, 2, 2 / 20))), label = 'Range 2')
+    plt.scatter(*zip(*run_greedy_for(problems, 2.3,2.4,4,np.arange(0, 1000, 10))), label = 'Range 100')
+    #plt.scatter(*zip(*run_greedy_for(problems, 2.3, 2.4, 4, np.arange(100, 1100, 50))), label = 'Range 1000')
+    #plt.scatter(*zip(*run_greedy_for(problems, 2.3, 2.4, 4, np.arange(1009, 11000, 500))), label='Range 10000')
+    #plt.scatter(*zip(*run_greedy_for(problems, 2.3, 2.4, 4, np.arange(10009, 110000, 5000))), label='Range 100000')
+    #plt.legend()
+    plt.show()
 
 
