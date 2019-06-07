@@ -1,9 +1,6 @@
 import math
-import sys
 
-from numba import njit
-
-from model import TTSP, TTP_OPT
+from model import TTSP
 from evaluation_function import profit, dist_to_opt
 import numpy as np
 from random import randint
@@ -36,23 +33,19 @@ class NeighrestNeighbors:
         return permutation
 
 
-@njit
-def test_coefficient_opt(item, factor, dist, ttp: TTP_OPT):
-    return (ttp.item_profit[item] ** factor) / (
-            (ttp.item_weight[item] ** factor) * dist[ttp.item_node[item]])
-
 class greedy_ttsp:
     def __init__(self, ttsp: TTSP, ttsp_permutation):
         self.ttsp = ttsp
         self.ttsp_permutation = ttsp_permutation
 
-    def testCoefficient_old(self, item, factor, dist):
+    def testCoefficient(self, item, factor, dist):
         return (self.ttsp.item_profit[item] ** factor) / (
                     (self.ttsp.item_weight[item] ** factor) * dist[self.ttsp.item_node[item]])
 
-    def testCoefficient(self, item, factor, dist):
-        print('Warning: Deprecated, use opt version')
-        return test_coefficient_opt(item, factor, dist, self.ttsp.ttp_opt)
+    def groupcGreedy(self, item, omega, alpha, dist):
+        return alpha*self.ttsp.item_profit[item]-(1-alpha)*self.ttsp.renting_ratio*dist[self.ttsp.item_node[item]]*\
+               (1/ (self.ttsp.max_speed-(omega+self.ttsp.item_weight[item]/self.ttsp.knapsack_capacity)*(self.ttsp.max_speed - self.ttsp.min_speed))
+                -1/(self.ttsp.max_speed-omega*(self.ttsp.max_speed - self.ttsp.min_speed)))
 
     def local_search(self, assignment, tour):
         prof = profit(tour, assignment, self.ttsp)
@@ -90,12 +83,13 @@ class greedy_ttsp:
         actual_profit = [0] * self.ttsp.item_num
         v = (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity
         for item in range(self.ttsp.item_num):
-            # speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
-            # actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
-            #                                                * speed_loss) + (self.ttsp.renting_ratio * dist[
+            #speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
+            #actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
+            #                                               * speed_loss) + (self.ttsp.renting_ratio * dist[
             #                         self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
-            actual_profit[item] = (test_coefficient_opt(item, coefficient, dist, self.ttsp.ttp_opt), item)
+            #actual_profit[item] = (self.testCoefficient(item, coefficient, dist), item)
             # actual_profit[item] = (self.opt_dist(item, dist, v), item)
+            actual_profit[item] = (self.groupcGreedy(item, factor, coefficient, dist)/self.ttsp.item_weight[item], item)
         actual_profit.sort()
         # print(actual_profit)
         # print(actual_profit)
@@ -108,14 +102,16 @@ class greedy_ttsp:
         j = 0
         while j < self.ttsp.item_num:
             (val, i) = actual_profit[self.ttsp.item_num - j - 1]
-            if factor < 1:
+            if val <= 0:
                 break
-            if weight + self.ttsp.item_weight[i] <= self.ttsp.knapsack_capacity:
+            #if factor < 1:
+                #break
+            if weight + self.ttsp.item_weight[i] <= self.ttsp.knapsack_capacity :
                 last_i.append(i)
                 weight += self.ttsp.item_weight[i]
                 assignment[i] = 1
                 # print(profit(self.ttsp_permutation, assignment, self.ttsp))
-                if count % factor == 0:
+                '''if count % factor == 0:
                     current_profit = profit(self.ttsp_permutation, assignment, self.ttsp)
                     # print('c', current_profit, max_val)
                     if current_profit < max_val:
@@ -126,7 +122,7 @@ class greedy_ttsp:
                         # factor = int(factor/2)
                     else:
                         max_val = current_profit
-                    last_i = []
+                    last_i = []'''
             j += 1
             count += 1
         tour = self.ttsp_permutation
