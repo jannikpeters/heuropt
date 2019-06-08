@@ -300,4 +300,4 @@ if __name__ == '__main__':
                 'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
                 'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
 
-    run_for(problems[:6], generate_generators(), True, False)
+    run_for(problems, [gen_lin_ratio_and_rand_coef], True, False)
