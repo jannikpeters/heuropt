@@ -15,7 +15,7 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP, seperate
     if seperate_value_rent:
         return kp_value, rent
     else:
-        return kp_value - ttsp.renting_ratio * rent
+        return ttsp.renting_ratio*kp_value - (1-ttsp.renting_ratio) * rent
 
 
 def profit_old(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
@@ -29,7 +29,7 @@ def profit_old(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
         current_weight += added_weight_at(city_i, packing_bitstring, ttsp)
         tij = t(city_i, city_ip1, ttsp, current_weight)
         cost += tij
-    return knapsack_value(packing_bitstring, ttsp) - R * cost
+    return R*knapsack_value(packing_bitstring, ttsp) - (1-R) * cost
 
 
 @njit

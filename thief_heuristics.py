@@ -2,7 +2,7 @@ import os
 import random
 import time
 from glob import iglob
-from pygmo import *
+from pygmo import hypervolume
 import gc
 import pandas as pd
 from scipy.spatial import KDTree
@@ -17,7 +17,7 @@ import timeit
 from ttpEAS import OnePlusOneEA
 from TestCase import TestCase
 import matplotlib.pyplot as plt
-
+import serverscript
 
 def positional_array(ttsp_permutation):
     pos = [0] * len(ttsp_permutation)
@@ -113,14 +113,14 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
         solutions_vec = []
         hypervol_vec = []
         count = 0
-        for file in os.listdir('tours/platours'):
-            if file != 'fnl1':
+        for file in os.listdir('test_tours/a280/'):
+            if file != '00012.tour':
                 continue
-            with open('tours/platours/' + file, 'r') as fp:
+            with open('test_tours/a280/' + file, 'r') as fp:
                 ttsp_permutation = fp.readline()
                 ttsp_permutation = ast.literal_eval(ttsp_permutation)
-                #del(ttsp_permutation[-1])
-                ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+                del(ttsp_permutation[-1])
+                #ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
                 ttsp_permutation = np.array(ttsp_permutation)
             #print('Greedy For:')
             fact = fact_start
@@ -131,13 +131,13 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
             hypervol = []
 
             for renting_ratio in ratios:
-                print(renting_ratio)
+                #print(renting_ratio)
                 while fact < fact_stop:
                     #ttsp.renting_ratio = renting_ratio
                     route = ttsp_permutation.copy()
-                    route, knapsack, prof = run_greedy(ttsp, route, 0.4, renting_ratio)
+                    route, knapsack, prof = run_greedy(ttsp, route, fact, renting_ratio)
                     kp_val, rent = profit(route, knapsack, ttsp, True)
-                    print(rent)
+                    #print(rent)
                     if rent > tour_max:
                         fact = round(fact + fact_steps, 5)
                         continue
@@ -150,8 +150,8 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
             '''plt.scatter(*zip(*hypervol))
             plt.show()'''
             #knapsack = greedy_ttsp(ttsp, route).local_search(knapsack, route)
-            print(len(solutions))
-            print([t for a,b,c, t in solutions])
+            #print(len(solutions))
+            #print([t for a,b,c, t in solutions])
             #save_result(solutions, problem)
             ref_point = [1, 1]
             hv = hypervolume(hypervol)
@@ -220,151 +220,384 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['pla33810_n33809']
+    problems = ['a280_n279']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
     plt.xlabel('time')
     plt.ylabel('negative profit')
     plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
-    arr = np.concatenate([np.array([i for i in np.arange(0,0.5,0.5/10)]),np.array([i for i in np.arange(0.5,0.9,0.4/10)])])
-    tour_min = 185389
-    tour_max = 458427
-    kp_min = 22136987
-    max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 2.3, 2.4, 4, arr, tour_min, tour_max, kp_min)
-    max_tours = [int(max_file[3])]*100
-    max_coeff = [0.4]*100
-    with open('tours/platours/' + max_file, 'r') as fp:
+    arr = np.concatenate([np.array([i for i in np.arange(0,0.5,0.5/50)]),np.array([i for i in np.arange(0.5,0.9,0.4/50)])])
+    tour_min = 2613
+    tour_max = 6908
+    kp_min = 42035
+    max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.7, 1, arr, tour_min, tour_max, kp_min)
+    max_tours = [int(max_file[1])]*100
+    max_coeff = [0.6]*100
+    with open('test_tours/a280/' + max_file, 'r') as fp:
         ttsp_permutation = fp.readline()
         ttsp_permutation = ast.literal_eval(ttsp_permutation)
-        # del(ttsp_permutation[-1])
-        ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+        del(ttsp_permutation[-1])
+        #ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
         ttsp_permutation = np.array(ttsp_permutation)
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problems[0])
     ref_point = [1,1]
-    tours = [0]*11
-    for new_file in range(1,11):
-        with open('tours/platours/' + 'fnl' + str(new_file), 'r') as fp:
+    tours = [1]*100
+    tours[0] = ttsp_permutation.copy()
+    #arr = np.array([0]*100)
+    for file in os.listdir('test_tours/a280/'):
+        with open('test_tours/a280/' + file, 'r') as fp:
             ttsp_permutation = fp.readline()
             ttsp_permutation = ast.literal_eval(ttsp_permutation)
-            # del(ttsp_permutation[-1])
-            ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+            del (ttsp_permutation[-1])
+            # ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
             ttsp_permutation = np.array(ttsp_permutation)
-            tours[new_file]=ttsp_permutation.copy()
-    iterations = 0
-
+            tours[int(file[:5])] = ttsp_permutation.copy()
+    iterations = 1
+    numb_tours = 100
+    tree = KDTree(ttsp.node_coord)
+    hv = hypervolume(max_hypervol)
+    ma = hv.compute(ref_point)
     while True:
-        if iterations % 500 == 0:
+        if iterations % 1000 == 0:
+            if iterations % 10000 == 0:
+                for i in range(len(max_hypervol)):
+                    sol, hyp = serverscript.calculate_for(arr[i], max_coeff[i], tours[max_tours[i]], max_hypervol, max_solutions, i,ttsp)
+                    old_hyp = max_hypervol[i]
+                    max_hypervol[i] = hyp
+
+                    hv = hypervolume(max_hypervol)
+                    c = hv.compute(ref_point)
+                    print(c)
+                    if c > ma:
+                        ma = c
+                        max_solutions[i] = sol
+                        max_tours[i] = numb_tours
+                        tours.append(sol[0].copy())
+                        numb_tours += 1
+
+                    else:
+                        max_hypervol[i] = old_hyp
+
+
             save_result(max_solutions, problems[0])
             plt.scatter(*zip(*max_hypervol))
             plt.show()
-        iterations += 1
-        change = np.random.uniform(0,1)
-        #neighbor swap
-        if change < 0.17:
-            to_change = np.random.randint(0,len(max_hypervol)-1)
-            new_c = np.random.uniform(arr[to_change],arr[to_change+1])
-            route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c )
-            kp_val, rent = profit(route, knapsack, ttsp, True)
-            #print(rent)
-            if rent > tour_max:
-                continue
-            hypervol_orig = max_hypervol[to_change]
-            max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
-            #print(c)
-            if c > ma:
-                ma = c
-                max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
-                print('n', c)
-                arr[to_change] = new_c
-            else:
-                max_hypervol[to_change] = hypervol_orig
-        elif change < 0.34:
-            to_change = np.random.randint(0, len(max_hypervol)-1)
-            new_file = np.random.randint(1,10)
+            print(max_coeff)
+            print(arr)
+            print(max_tours)
+            print(c)
+            ma = c
 
-            route = ttsp_permutation.copy()
-            route, knapsack, prof = run_greedy(ttsp, route, max_coeff[to_change],arr[to_change])
-            kp_val, rent = profit(route, knapsack, ttsp, True)
-            # print(rent)
-            if rent > tour_max:
-                continue
-            hypervol_orig = max_hypervol[to_change]
-            max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
-            hv = hypervolume(max_hypervol)
-            c = hv.compute(ref_point)
-            # print(c)
-            if c > ma:
-                ma = c
-                max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
-                print('t', c)
-                max_tours[to_change] = new_file
+        iterations += 1
+
+        change_numb = 10
+        numb_changes = np.random.poisson(2)+1
+        #neighbor swap
+        #pre_arr = arr.copy()
+        #pre_coeff = max_coeff.copy()
+        #pre_tours = max_tours.copy()
+        #pre_hyper = max_hypervol.copy()
+        #pre_sol = max_solutions.copy()
+        #to_change = np.random.randint(0, len(max_hypervol) - 1)
+        '''for new_c in np.arange(arr[to_change]-0.1, arr[to_change]+0.1, 0.2/10):
+            for new_coeff in np.arange(max_coeff[to_change]-0.1, max_coeff[to_change]+0.1, 0.2/10):
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, new_c)
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                # print(rent)
+                if rent > tour_max:
+                    continue
+                hypervol_orig = max_hypervol[to_change]
+                max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                hv = hypervolume(max_hypervol)
+                c = hv.compute(ref_point)
+                if c > ma:
+                    ma = c
+                    print('local_search', c)
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    arr[to_change] = new_c
+                    max_coeff[to_change] = new_coeff
+                else:
+                    max_hypervol[to_change] = hypervol_orig'''
+
+
+        for l in range(min(change_numb, 1)):
+            change = np.random.uniform(0, 1)
+            if change < 0.1:
+                to_change = np.random.randint(0, len(max_hypervol) - 1)
+                for i in range(1):
+                    to_swap = np.random.randint(1, ttsp.dim, 3)
+                    if to_swap[0] == to_swap[1] or to_swap[0] == to_swap[2] or to_swap[1] == to_swap[2]:
+                        continue
+                    ttsp_permutation = tours[max_tours[to_change]].copy()
+                    start, reversal, end = np.split(ttsp_permutation,
+                                                    [min(to_swap[0], to_swap[1]), max(to_swap[0], to_swap[1])])
+                    reversal = np.flip(reversal, 0)
+                    ttsp_permutation = np.concatenate([start, reversal, end])
+                    route, knapsack, prof = run_greedy(ttsp, ttsp_permutation, max_coeff[to_change], arr[to_change])
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    # hypervol_orig = max_hypervol[to_change]
+                    hypervol_orig = max_hypervol[to_change]
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    hv = hypervolume(max_hypervol)
+                    c = hv.compute(ref_point)
+                    # print(c)
+                    if c > ma:
+                        ma = c
+                        max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                        # print('swap', c)
+                        max_tours[to_change] = numb_tours
+                        tours.append(route.copy())
+                        numb_tours += 1
+                        print('swap',c)
+                    else:
+                        max_hypervol[to_change] = hypervol_orig
+                    start, reversal, end = np.split(ttsp_permutation,
+                                                    [min(to_swap[1], to_swap[2]), max(to_swap[1], to_swap[2])])
+                    reversal = np.flip(reversal, 0)
+                    ttsp_permutation = np.concatenate([start, reversal, end])
+                    route, knapsack, prof = run_greedy(ttsp, ttsp_permutation, max_coeff[to_change], arr[to_change])
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    # hypervol_orig = max_hypervol[to_change]
+                    hypervol_orig = max_hypervol[to_change]
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    hv = hypervolume(max_hypervol)
+                    c = hv.compute(ref_point)
+                    # print(c)
+                    if c > ma:
+                        ma = c
+                        max_solutions[to_change] = (
+                        route, knapsack, kp_val, rent)  # put more in here for more solutions
+                        # print('swap', c)
+                        max_tours[to_change] = numb_tours
+                        tours.append(route.copy())
+                        numb_tours += 1
+                        print('swap', c)
+                    else:
+                        max_hypervol[to_change] = hypervol_orig
+                    start, reversal, end = np.split(ttsp_permutation,
+                                                    [min(to_swap[2], to_swap[0]), max(to_swap[2], to_swap[0])])
+                    reversal = np.flip(reversal, 0)
+                    ttsp_permutation = np.concatenate([start, reversal, end])
+                    route, knapsack, prof = run_greedy(ttsp, ttsp_permutation, max_coeff[to_change], arr[to_change])
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    # hypervol_orig = max_hypervol[to_change]
+                    hypervol_orig = max_hypervol[to_change]
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    hv = hypervolume(max_hypervol)
+                    c = hv.compute(ref_point)
+                    # print(c)
+                    if c > ma:
+                        ma = c
+                        max_solutions[to_change] = (
+                        route, knapsack, kp_val, rent)  # put more in here for more solutions
+                        # print('swap', c)
+                        max_tours[to_change] = numb_tours
+                        tours.append(route.copy())
+                        numb_tours += 1
+                        print('swap', c)
+                    else:
+                        max_hypervol[to_change] = hypervol_orig
+
+            elif change < 0.2:
+                hv = hypervolume(max_hypervol)
+                to_change = hv.least_contributor(ref_point)
+                new_c = np.random.uniform(0,1)
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                # print(rent)
+                if rent > tour_max:
+                    continue
+                hypervol_orig = max_hypervol[to_change]
+                max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                hv = hypervolume(max_hypervol)
+                c = hv.compute(ref_point)
+                # print(c)
+                if c > ma:
+                    ma = c
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    print('least_alpha', c)
+                    arr[to_change] = new_c
+                else:
+                    max_hypervol[to_change] = hypervol_orig
+            elif change < 0.34:
+                to_change = np.random.randint(0, len(max_hypervol) - 1)
+                new_file = np.random.randint(0, numb_tours)
+
+                #route = ttsp_permutation.copy()
+                route, knapsack, prof = run_greedy(ttsp, tours[new_file], max_coeff[to_change], arr[to_change])
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                # print(rent)
+                if rent > tour_max:
+                    continue
+                hypervol_orig = max_hypervol[to_change]
+                max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                hv = hypervolume(max_hypervol)
+                c = hv.compute(ref_point)
+                # print(c)
+                if c > ma:
+                    ma = c
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    print('t', c)
+                    max_tours[to_change] = new_file
+                else:
+                    max_hypervol[to_change] = hypervol_orig
+            elif change < 0.5:
+                hv = hypervolume(max_hypervol)
+                to_change = hv.least_contributor(ref_point)
+                new_coeff = np.random.uniform(0,1)
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                # print(rent)
+                if rent > tour_max:
+                    continue
+                hypervol_orig = max_hypervol[to_change]
+                max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                hv = hypervolume(max_hypervol)
+                c = hv.compute(ref_point)
+                # print(c)
+                if c > ma:
+                    ma = c
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    print('ome', c)
+                    max_coeff[to_change] = new_coeff
+                else:
+                    max_hypervol[to_change] = hypervol_orig
+            elif change < 0.7:
+                to_change = np.random.randint(0, len(max_hypervol) - 1)
+                new_c = np.random.uniform(arr[to_change]-0.2, arr[to_change]+0.2)
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                # print(rent)
+                if rent > tour_max:
+                    continue
+                hypervol_orig = max_hypervol[to_change]
+                max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                hv = hypervolume(max_hypervol)
+                c = hv.compute(ref_point)
+                # print(c)
+                if c > ma:
+                    ma = c
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    print('rand_alpha', c)
+                    arr[to_change] = new_c
+                else:
+                    max_hypervol[to_change] = hypervol_orig
             else:
-                max_hypervol[to_change] = hypervol_orig
-        elif change < 0.51:
-            to_change = np.random.randint(0, len(max_hypervol)-1)
-            route = ttsp_permutation.copy()
-            new_coeff = np.random.uniform(max_coeff[to_change], max_coeff[to_change+1])
-            route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff,arr[to_change])
-            kp_val, rent = profit(route, knapsack, ttsp, True)
-            # print(rent)
-            if rent > tour_max:
-                continue
-            hypervol_orig = max_hypervol[to_change]
-            max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
-            hv = hypervolume(max_hypervol)
-            c = hv.compute(ref_point)
-            # print(c)
-            if c > ma:
-                ma = c
-                max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
-                print('ome', c)
-                max_coeff[to_change] = new_coeff
-            else:
-                max_hypervol[to_change] = hypervol_orig
-        elif change < 0.7:
-            to_change = np.random.randint(0, len(max_hypervol) - 1)
-            new_c = np.random.uniform(0,1)
-            route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
-            kp_val, rent = profit(route, knapsack, ttsp, True)
-            # print(rent)
-            if rent > tour_max:
-                continue
-            hypervol_orig = max_hypervol[to_change]
-            max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
-            hv = hypervolume(max_hypervol)
-            c = hv.compute(ref_point)
-            # print(c)
-            if c > ma:
-                ma = c
-                max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
-                print('rand_alpha', c)
-                arr[to_change] = new_c
-            else:
-                max_hypervol[to_change] = hypervol_orig
-        else:
-            to_change = np.random.randint(0, len(max_hypervol) - 1)
-            route = ttsp_permutation.copy()
-            new_coeff = np.random.uniform(0,1)
-            route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
-            kp_val, rent = profit(route, knapsack, ttsp, True)
-            # print(rent)
-            if rent > tour_max:
-                continue
-            hypervol_orig = max_hypervol[to_change]
-            max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
-            hv = hypervolume(max_hypervol)
-            c = hv.compute(ref_point)
-            # print(c)
-            if c > ma:
-                ma = c
-                max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
-                print('rand_omega', c)
-                max_coeff[to_change] = new_coeff
-            else:
-                max_hypervol[to_change] = hypervol_orig
+                to_change = np.random.randint(0, len(max_hypervol) - 1)
+                new_coeff = np.random.uniform(max_coeff[to_change]-0.2, max_coeff[to_change]+0.2)
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
+                kp_val, rent = profit(route, knapsack, ttsp, True)
+                # print(rent)
+                if rent > tour_max:
+                    continue
+                hypervol_orig = max_hypervol[to_change]
+                max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                hv = hypervolume(max_hypervol)
+                c = hv.compute(ref_point)
+                # print(c)
+                if c > ma:
+                    ma = c
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    print('rand_omega', c)
+                    max_coeff[to_change] = new_coeff
+                else:
+                    #print('why', c)
+                    max_hypervol[to_change] = hypervol_orig
+                '''elif change <= 6/change_numb:
+                    hv = hypervolume(max_hypervol)
+                    to_change = hv.least_contributor(ref_point)
+                    new_coeff = np.random.uniform(0, 1)
+                    route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    hypervol_orig = max_hypervol[to_change]
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    max_coeff[to_change] = new_coeff
+                elif change <= 7 / change_numb:
+                    hv = hypervolume(max_hypervol)
+                    to_change = hv.least_contributor(ref_point)
+                    new_c = np.random.uniform(0, 1)
+                    route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    #ma = c
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    #print('rand_least_alpha', c)
+                    arr[to_change] = new_c
+                elif change < 8/change_numb:
+                    to_change = np.random.randint(0, len(max_hypervol) - 1)
+                    to_swap = np.random.randint(1, ttsp.dim, 2)
+                    if to_swap[0] == to_swap[1]:
+                        continue
+                    ttsp_permutation = tours[max_tours[to_change]].copy()
+                    start, reversal, end = np.split(ttsp_permutation,
+                                                    [min(to_swap[0], to_swap[1]), max(to_swap[0], to_swap[1]) ])
+                    reversal = np.flip(reversal, 0)
+                    ttsp_permutation = np.concatenate([start, reversal, end])
+                    route, knapsack, prof = run_greedy(ttsp, ttsp_permutation, max_coeff[to_change], arr[to_change])
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    #hypervol_orig = max_hypervol[to_change]
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+    
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    #print('swap', c)
+                    max_tours[to_change] = numb_tours
+                    tours.append(route.copy())
+                    numb_tours += 1
+                elif change < 9/change_numb:
+                    to_change = np.random.randint(0, len(max_hypervol) - 1)
+                    new_c = np.random.uniform(0,1)
+                    new_coeff = np.random.uniform(0,1)
+                    route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, new_c)
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    #print('total_rand', c)
+                    arr[to_change] = new_c
+                    max_coeff[to_change] = new_coeff
+                elif change < 10/change_numb:
+                    hv = hypervolume(max_hypervol)
+                    to_change = hv.least_contributor(ref_point)
+                    new_c = np.random.uniform(0,1)
+                    new_coeff = np.random.uniform(0,1)
+                    route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, new_c)
+                    kp_val, rent = profit(route, knapsack, ttsp, True)
+                    # print(rent)
+                    if rent > tour_max:
+                        continue
+                    max_hypervol[to_change] = ((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+                    #hv = hypervolume(max_hypervol)
+                    #c = hv.compute(ref_point)
+                    max_solutions[to_change] = (route, knapsack, kp_val, rent)  # put more in here for more solutions
+                    #print('total_rand_least', c)
+                    arr[to_change] = new_c
+                    max_coeff[to_change] = new_coeff'''
+
+
 
 
 

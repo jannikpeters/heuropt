@@ -43,7 +43,7 @@ class greedy_ttsp:
                     (self.ttsp.item_weight[item] ** factor) * dist[self.ttsp.item_node[item]])
 
     def groupcGreedy(self, item, omega, alpha, dist):
-        return alpha*self.ttsp.item_profit[item]-(1-alpha)*self.ttsp.renting_ratio*dist[self.ttsp.item_node[item]]*\
+        return alpha*self.ttsp.item_profit[item]-(1-alpha)*self.ttsp.old_rr*dist[self.ttsp.item_node[item]]*\
                (1/ (self.ttsp.max_speed-(omega+self.ttsp.item_weight[item]/self.ttsp.knapsack_capacity)*(self.ttsp.max_speed - self.ttsp.min_speed))
                 -1/(self.ttsp.max_speed-omega*(self.ttsp.max_speed - self.ttsp.min_speed)))
 
@@ -53,11 +53,11 @@ class greedy_ttsp:
             assignment[item] = 1 - assignment[item]
             new_profit = profit(tour, assignment, self.ttsp)
             if new_profit > prof:
-                print(prof)
+                #print(prof)
                 prof = new_profit
             else:
                 assignment[item] = 1 - assignment[item]
-        print(prof)
+        #print(prof)
         return assignment
 
     def insertion(self, assigment, tour):

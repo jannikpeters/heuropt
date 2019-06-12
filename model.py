@@ -41,6 +41,7 @@ class TTSP:
         self.renting_ratio = float(line.split(':')[1].strip())
         line = fp.readline()
         self.edge_weight_type = line.split(':')[1].strip()
+        self.old_rr = self.renting_ratio
 
         # read node coords
         line = fp.readline()
@@ -91,7 +92,7 @@ class TTSP:
         else:
             self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32,
                                                                                 copy=False))
-            np.save(dist_cache_name, self.dist_cache)
+        np.save(dist_cache_name, self.dist_cache)
         self.normalizing_constant = (self.max_speed - self.min_speed) / self.knapsack_capacity
         self.ttp_opt = TTP_OPT(self.dim, self.item_num, self.knapsack_capacity, self.min_speed,
                                self.max_speed, self.normalizing_constant, self.renting_ratio,
