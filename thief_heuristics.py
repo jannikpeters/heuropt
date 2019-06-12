@@ -220,17 +220,17 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['a280_n279']
+    problems = ['a280_n1395']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
-    plt.xlabel('time')
-    plt.ylabel('negative profit')
-    plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
+    #plt.xlabel('time')
+    #plt.ylabel('negative profit')
+    #plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0,0.5,0.5/50)]),np.array([i for i in np.arange(0.5,0.9,0.4/50)])])
     tour_min = 2613
-    tour_max = 6908
-    kp_min = 42035
+    tour_max = 6766
+    kp_min = 489194
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.7, 1, arr, tour_min, tour_max, kp_min)
     max_tours = [int(max_file[1])]*100
     max_coeff = [0.6]*100
@@ -263,6 +263,8 @@ if __name__ == '__main__':
             if iterations % 10000 == 0:
                 for i in range(len(max_hypervol)):
                     sol, hyp = serverscript.calculate_for(arr[i], max_coeff[i], tours[max_tours[i]], max_hypervol, max_solutions, i,ttsp)
+                    if sol == -1:
+                        continue
                     old_hyp = max_hypervol[i]
                     max_hypervol[i] = hyp
 
@@ -281,8 +283,8 @@ if __name__ == '__main__':
 
 
             save_result(max_solutions, problems[0])
-            plt.scatter(*zip(*max_hypervol))
-            plt.show()
+            #plt.scatter(*zip(*max_hypervol))
+            #plt.show()
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
             print(max_coeff)
