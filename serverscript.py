@@ -9,8 +9,8 @@ from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
 tour_min = 2613
-tour_max = 6908
-kp_min = 42035
+tour_max = 6766
+kp_min = 489194
 
 def calculate_for(renting_r,omega,  ttsp_permutation, hypervol, solutions, to_change, ttsp):
     dominated = True
