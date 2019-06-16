@@ -15,7 +15,7 @@ def profit(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP, seperate
     if seperate_value_rent:
         return kp_value, rent
     else:
-        return ttsp.renting_ratio*kp_value - (1-ttsp.renting_ratio) * rent
+        return kp_value - ttsp.renting_ratio * rent
 
 
 def profit_old(tour: np.ndarray, packing_bitstring: np.ndarray, ttsp: TTSP):
