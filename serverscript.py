@@ -11,8 +11,7 @@ from ttsp_heuristics import greedy_ttsp
 tour_min = 2613
 tour_max = 6766
 kp_min = 489194
-
-def calculate_for(renting_r,omega,  ttsp_permutation, hypervol, solutions, to_change, ttsp):
+def calculate_for(renting_r,omega,  ttsp_permutation, ttsp):
     dominated = True
     count = 0
     ttsp_permutation = ttsp_permutation.copy()
@@ -29,9 +28,13 @@ def calculate_for(renting_r,omega,  ttsp_permutation, hypervol, solutions, to_ch
         ttsp.renting_ratio = renting_r
         ttsp_permutation, knapsack_assignment, prof = run_greedy(ttsp, ttsp_permutation, omega,
                                                                  renting_r)
+        kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
+        #print('before', rent, -kp_val)
+        #print(((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min))
+
         #print(solutions[to_change][2], solutions[to_change][3])
         #print(profit(ttsp_permutation, knapsack_assignment,ttsp, True))
-        for i in range(3):
+        for i in range(2):
             # ttsp, knapsack_assignment, ttsp_permutation = read_init_solution_from('solutions', problem)
             val = [ttsp.item_profit[i] / ttsp.item_weight[i] for i in range(ttsp.item_num)]
             distr = np.array([np.inf] * ttsp.dim)
@@ -112,6 +115,7 @@ def calculate_for(renting_r,omega,  ttsp_permutation, hypervol, solutions, to_ch
             #prof = profit(ttsp_permutation, knapsack_assignment, ttsp)
             # save_result(ttsp_permutation, knapsack_assignment, problem, prof, 0,ea='2opt')
         kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
+        #print('after', rent, -kp_val)
         if rent > tour_max:
             return -1, (-1, -1)
         return (ttsp_permutation, knapsack_assignment, kp_val, rent),((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)

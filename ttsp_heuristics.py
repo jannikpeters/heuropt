@@ -43,7 +43,7 @@ class greedy_ttsp:
                     (self.ttsp.item_weight[item] ** factor) * dist[self.ttsp.item_node[item]])
 
     def groupcGreedy(self, item, omega, alpha, dist):
-        return alpha*self.ttsp.item_profit[item]-(1-alpha)*self.ttsp.old_rr*dist[self.ttsp.item_node[item]]*\
+        return self.ttsp.item_profit[item]-self.ttsp.old_rr*dist[self.ttsp.item_node[item]]*\
                (1/ (self.ttsp.max_speed-(omega+self.ttsp.item_weight[item]/self.ttsp.knapsack_capacity)*(self.ttsp.max_speed - self.ttsp.min_speed))
                 -1/(self.ttsp.max_speed-omega*(self.ttsp.max_speed - self.ttsp.min_speed)))
 
