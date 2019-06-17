@@ -114,8 +114,8 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
         solutions_vec = []
         hypervol_vec = []
         count = 0
-        for file in os.listdir('test_tours/a280/'):
-            with open('test_tours/a280/' + file, 'r') as fp:
+        for file in os.listdir('test_tours/fnl4461/'):
+            with open('test_tours/fnl4461/' + file, 'r') as fp:
                 ttsp_permutation = fp.readline()
                 ttsp_permutation = ast.literal_eval(ttsp_permutation)
                 del(ttsp_permutation[-1])
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['a280_n1395']
+    problems = ['fnl4461_n4460']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
@@ -229,16 +229,16 @@ if __name__ == '__main__':
     #plt.ylabel('negative profit')
     #plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/50)]),np.array([i for i in np.arange(0.5, 1, 0.5/50)])])
-    tour_min = 2613
-    tour_max = 6766
-    kp_min = 489194
+    tour_min = 185382
+    tour_max = 464473
+    kp_min = 645150
 
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
     max_tours = [int(max_file[1])]*1000
     max_coeff = [0.6]*1000
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problems[0])
-    with open('test_tours/a280/' + max_file, 'r') as fp:
+    with open('test_tours/fnl4461/' + max_file, 'r') as fp:
         ttsp_permutation = fp.readline()
         ttsp_permutation = ast.literal_eval(ttsp_permutation)
         del(ttsp_permutation[-1])
@@ -250,8 +250,8 @@ if __name__ == '__main__':
     best_tour = ttsp_permutation.copy()
     #arr = np.array([0]*100)
     numb_tours = 100
-    for file in os.listdir('test_tours/a280/'):
-        with open('test_tours/a280/' + file, 'r') as fp:
+    for file in os.listdir('test_tours/fnl4461/'):
+        with open('test_tours/fnl4461/' + file, 'r') as fp:
             ttsp_permutation = fp.readline()
             ttsp_permutation = ast.literal_eval(ttsp_permutation)
             del (ttsp_permutation[-1])
