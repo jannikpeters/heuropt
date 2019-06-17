@@ -221,14 +221,14 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['pla33810_n33809']
+    problems = ['pla33810_n169045']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
     #plt.xlabel('time')
     #plt.ylabel('negative profit')
     #plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
-    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/25)]),np.array([i for i in np.arange(0.5, 1, 0.5/25)])])
+    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/10)]),np.array([i for i in np.arange(0.5, 1, 0.5/10)])])
     tour_min = 66048945
     tour_max = 165687677
     kp_min = 4860619
