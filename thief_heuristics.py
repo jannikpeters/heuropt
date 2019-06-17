@@ -115,8 +115,6 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
         hypervol_vec = []
         count = 0
         for file in os.listdir('test_tours/a280/'):
-            if file != "00012.tour":
-                continue
             with open('test_tours/a280/' + file, 'r') as fp:
                 ttsp_permutation = fp.readline()
                 ttsp_permutation = ast.literal_eval(ttsp_permutation)
@@ -223,7 +221,7 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['a280_n1395']
+    problems = ['a280_n2790']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
@@ -232,8 +230,8 @@ if __name__ == '__main__':
     #plt.title('Figure 3: Greedy and ea curves after different iterations for ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/50)]),np.array([i for i in np.arange(0.5, 0.9, 0.4/50)])])
     tour_min = 2613
-    tour_max = 6766
-    kp_min = 489194
+    tour_max = 6636
+    kp_min = 1375387
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problems[0])
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
