@@ -223,17 +223,17 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['a280_n279']
+    problems = ['a280_n1395']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
-    plt.xlabel('time')
-    plt.ylabel('negative profit')
-    plt.title('Figure 3: Greedy and ea curves after different iterations for ' + problems[0])
+    #plt.xlabel('time')
+    #plt.ylabel('negative profit')
+    #plt.title('Figure 3: Greedy and ea curves after different iterations for ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/50)]),np.array([i for i in np.arange(0.5, 0.9, 0.4/50)])])
     tour_min = 2613
-    tour_max = 6336
-    kp_min = 42036
+    tour_max = 6766
+    kp_min = 489194
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problems[0])
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
