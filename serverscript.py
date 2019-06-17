@@ -9,9 +9,9 @@ from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
 tour_min = 2613
-tour_max = 6908
-kp_min = 42035
-def calculate_for(ttsp, ttsp_permutation, omega, renting_r):
+tour_max =  6766
+kp_min =  489194
+def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities, num_items):
     dominated = True
     count = 0
     ttsp_permutation = ttsp_permutation.copy()
@@ -63,7 +63,8 @@ def calculate_for(ttsp, ttsp_permutation, omega, renting_r):
             k_c = knapsack_assignment.copy()
             greedy = greedy_ttsp(ttsp, ttsp_permutation)
             tree = KDTree(ttsp.node_coord)
-            for k in reversed(range(1, ttsp.dim - 1)):
+            cities = np.random.choice(ttsp_permutation, num_cities, replace=False)
+            for k in reversed(cities):
                 # print(k)
                 for j in tree.query(ttsp.node_coord[ttsp_permutation[k], :], 10)[1]:
                     j = tour_pos[j]
@@ -109,9 +110,17 @@ def calculate_for(ttsp, ttsp_permutation, omega, renting_r):
                         ttsp_permutation = tour_c.copy()
                         knapsack_assignment = k_c.copy()
                         # assert(prof == profit(ttsp_permutation, knapsack_assignment, ttsp))
+            items = np.random.choice(ttsp.item_num, num_items)
             for i in range(1):
-                #print('test')
-                knapsack_assignment = greedy.local_search(knapsack_assignment, ttsp_permutation)
+                prof = profit(ttsp_permutation, knapsack_assignment, ttsp)
+                for item in items:
+                    knapsack_assignment[item] = 1 - knapsack_assignment[item]
+                    new_profit = profit(ttsp_permutation, knapsack_assignment, ttsp)
+                    if new_profit > prof:
+                        # print(prof)
+                        prof = new_profit
+                    else:
+                        knapsack_assignment[item] = 1 - knapsack_assignment[item]
             #prof = profit(ttsp_permutation, knapsack_assignment, ttsp)
             # save_result(ttsp_permutation, knapsack_assignment, problem, prof, 0,ea='2opt')
         kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
