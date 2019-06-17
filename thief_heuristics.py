@@ -221,7 +221,7 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['pla33810_n169045']
+    problems = ['pla33810_n338090']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
@@ -230,8 +230,8 @@ if __name__ == '__main__':
     #plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/10)]),np.array([i for i in np.arange(0.5, 1, 0.5/10)])])
     tour_min = 66050599
-    tour_max = 175117031
-    kp_min = 59472078
+    tour_max = 169587545
+    kp_min = 168033263
 
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
