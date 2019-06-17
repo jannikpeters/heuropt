@@ -229,9 +229,9 @@ if __name__ == '__main__':
     #plt.ylabel('negative profit')
     #plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/10)]),np.array([i for i in np.arange(0.5, 1, 0.5/10)])])
-    tour_min = 66048945
-    tour_max = 165687677
-    kp_min = 4860619
+    tour_min = 66050599
+    tour_max = 175117031
+    kp_min = 59472078
 
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
