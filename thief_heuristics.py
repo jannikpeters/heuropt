@@ -221,17 +221,17 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['fnl4461_n4460']
+    problems = ['fnl4461_n44600']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
     #plt.xlabel('time')
     #plt.ylabel('negative profit')
     #plt.title('Figure 4: Results for renting rations in range 1000 for ' + problems[0])
-    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/50)]),np.array([i for i in np.arange(0.5, 1, 0.5/50)])])
+    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/25)]),np.array([i for i in np.arange(0.5, 1, 0.5/25)])])
     tour_min = 185382
-    tour_max = 464473
-    kp_min = 645150
+    tour_max = 458662
+    kp_min = 22136885
 
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
