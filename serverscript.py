@@ -9,9 +9,9 @@ from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
 tour_min = 2613
-tour_max = 6658
-kp_min = 1375443
-def calculate_for(renting_r,omega,  ttsp_permutation, ttsp):
+tour_max = 6908
+kp_min = 42035
+def calculate_for(ttsp, ttsp_permutation, omega, renting_r):
     dominated = True
     count = 0
     ttsp_permutation = ttsp_permutation.copy()
@@ -116,9 +116,9 @@ def calculate_for(renting_r,omega,  ttsp_permutation, ttsp):
             # save_result(ttsp_permutation, knapsack_assignment, problem, prof, 0,ea='2opt')
         kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
         #print('after', rent, -kp_val)
-        if rent > tour_max:
-            return -1, (-1, -1)
-        return (ttsp_permutation, knapsack_assignment, kp_val, rent),((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+
+        #return (ttsp_permutation, knapsack_assignment, kp_val, rent),((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
+        return ttsp_permutation, knapsack_assignment, 0
 problems = ['a280_n279']
 # problems = ['a280_n279', 'a280_n2790', 'a280_n1395',
     #            'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
