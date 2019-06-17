@@ -61,18 +61,24 @@ class greedy_ttsp:
         return assignment
 
     def insertion(self, assigment, tour):
-        prof = profit(tour, assigment, self.ttsp)
-        for i in reversed(range(self.ttsp.dim)):
+        val, prof = profit(tour, assigment, self.ttsp, True)
+        print(prof)
+        for i in reversed(range(self.ttsp.dim-1)):
             item = tour[i]
-            for j in reversed(range(i - 1)):
-                np.delete(tour, i)
-                np.insert(tour, j, item)
-                new_prof = profit(tour, assigment, self.ttsp)
-                if new_prof > prof:
+            for j in reversed(range(i)):
+                start, reversal, end = np.split(tour,
+                                                [j, i + 1])
+                reversal = np.flip(reversal, 0)
+                tour = np.concatenate([start, reversal, end])
+                val ,new_prof = profit(tour, assigment, self.ttsp, True)
+                #print(new_prof)
+                if new_prof < prof:
                     prof = new_prof
+                    print(prof)
+
                 else:
-                    np.delete(tour, j)
-                    np.insert(tour, i, item)
+                    reversal = np.flip(reversal, 0)
+                    tour = np.concatenate([start, reversal, end])
 
         print(prof)
         return tour

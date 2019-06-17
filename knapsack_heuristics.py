@@ -120,6 +120,7 @@ class DPNumpy():
                 k -= item_weight[item - 1]
                 solution_weight += item_weight[item - 1]
 
-        bitstring = np.array((1 if item_index in taken else 0 for item_index in range(
-                number_of_items+1)))
+        bitstring = np.array([1 if item_index in taken else 0 for item_index in range(
+                number_of_items)])
+        print(bitstring)
         return solution_value, bitstring, 0, aborted, time.time() - start_time, []
