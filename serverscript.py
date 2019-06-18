@@ -8,9 +8,9 @@ from pygmo import *
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
-tour_min = 185382
-tour_max = 429339
-kp_min = 645150
+tour_min = 66050599
+tour_max = 175117031
+kp_min =  59472078
 def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities, num_items):
     dominated = True
     count = 0
@@ -65,8 +65,8 @@ def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities, num_item
             tree = KDTree(ttsp.node_coord)
             cities = np.random.choice(ttsp_permutation, num_cities, replace=False)
             for k in reversed(cities):
-                # print(k)
                 for j in tree.query(ttsp.node_coord[ttsp_permutation[k], :], 10)[1]:
+
                     j = tour_pos[j]
                     if k < j or j == 0:
                         continue

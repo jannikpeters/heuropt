@@ -114,12 +114,12 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
         solutions_vec = []
         hypervol_vec = []
         count = 0
-        for file in os.listdir('test_tours/fnl4461/'):
-            with open('test_tours/fnl4461/' + file, 'r') as fp:
+        for file in os.listdir('test_tours/pla33810/'):
+            with open('test_tours/pla33810/' + file, 'r') as fp:
                 ttsp_permutation = fp.readline()
                 ttsp_permutation = ast.literal_eval(ttsp_permutation)
-                del(ttsp_permutation[-1])
-                #ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+                #del(ttsp_permutation[-1])
+                ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
                 ttsp_permutation = np.array(ttsp_permutation)
             #ttsp_permutation = np.random.permutation(ttsp.dim)
             #print('Greedy For:')
@@ -221,41 +221,41 @@ if __name__ == '__main__':
     # okaay :)
     #run_greedy_for(problems, 2, 5, 0.8)
     #run_ea_for(problems, 1)
-    problems = ['fnl4461_n4460']
+    problems = ['pla33810_n169045']
                #'a280_n279', 'a280_n2790', 'a280_n1395'
    # ]
 
-    #plt.xlabel('time')
-    #plt.ylabel('negative profit')
-    #plt.title('Figure 3: Greedy and ea curves after different iterations for ' + problems[0])
-    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/25)]),np.array([i for i in np.arange(0.5, 0.9, 0.4/25)])])
-    tour_min = 185382
-    tour_max = 429339
-    kp_min = 645150
+    plt.xlabel('iteration')
+    plt.ylabel('hypervolume')
+    plt.title('Figure 3: Hypervolume over time with restarts ' + problems[0])
+    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5/10)]),np.array([i for i in np.arange(0.5, 0.9, 0.4/10)])])
+    tour_min = 66050599
+    tour_max = 175117031
+    kp_min =  59472078
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problems[0])
     max_file, ma,max_solutions, max_hypervol =run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min, tour_max, kp_min)
     print(len(max_hypervol))
-    max_tours = [int(max_file[1])]*1000
-    max_coeff = [0.6]*1000
+    max_tours = [int(max_file[1])]*100
+    max_coeff = [0.6]*100
 
-    with open('test_tours/fnl4461/' + max_file, 'r') as fp:
+    with open('test_tours/pla33810/' + max_file, 'r') as fp:
         ttsp_permutation = fp.readline()
         ttsp_permutation = ast.literal_eval(ttsp_permutation)
-        del(ttsp_permutation[-1])
-        #ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+        #del(ttsp_permutation[-1])
+        ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
         ttsp_permutation = np.array(ttsp_permutation)
 
     ref_point = [1,1]
-    tours = [1]*200
+    tours = [1]*2
     best_tour = ttsp_permutation.copy()
     #arr = np.array([0]*100)
-    numb_tours = 100
-    for file in os.listdir('test_tours/fnl4461/'):
-        with open('test_tours/fnl4461/' + file, 'r') as fp:
+    numb_tours = 1
+    for file in os.listdir('test_tours/pla33810/'):
+        with open('test_tours/pla33810/' + file, 'r') as fp:
             ttsp_permutation = fp.readline()
             ttsp_permutation = ast.literal_eval(ttsp_permutation)
-            del (ttsp_permutation[-1])
-            #ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+            #del (ttsp_permutation[-1])
+            ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
             ttsp_permutation = np.array(ttsp_permutation)
             tours[int(file[:5])] = ttsp_permutation.copy()
             tours[numb_tours + int(file[:5])] = reversePerm(ttsp_permutation).copy()
@@ -267,9 +267,10 @@ if __name__ == '__main__':
     tree = KDTree(ttsp.node_coord)
     hv = hypervolume(max_hypervol)
     ma = hv.compute(ref_point)
+    sols = []
     while True:
-        if iterations % 2500 == 0:
-            if iterations % 10000 == 0:
+        if iterations % 200 == 0:
+            if iterations % 10000 == -1:
                 for i in range(1,len(max_hypervol)):
                     route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[i]], max_coeff[i], arr[i], ttsp.dim, ttsp.item_num)
                     kp_val, rent = profit(route, knapsack, ttsp, True)
@@ -298,11 +299,12 @@ if __name__ == '__main__':
             #plt.show()
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
-            print(max_coeff)
-            print(arr)
-            print(max_tours)
-            print(c)
+            #print(max_coeff)
+            #print(arr)
+            #print(max_tours)
+            #print(c)
             ma = c
+
         #if iterations == 7500 :
             #plt.legend()
             #plt.show()
@@ -498,7 +500,7 @@ if __name__ == '__main__':
             elif change < 0.95:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
                 route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]], max_coeff[to_change], arr[to_change],
-                                                                   10, 10)
+                                                                   20, 20)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -542,3 +544,5 @@ if __name__ == '__main__':
                     print('kp_swap', c)
                 else:
                     max_hypervol[to_change] = hypervol_orig
+
+
