@@ -8,10 +8,11 @@ from pygmo import *
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
-tour_min = 185389
-tour_max = 457783
-kp_min =  7827881
-def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities, num_items):
+def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities = -1, num_items= -1):
+    if num_cities == -1:
+        num_cities = ttsp.dim
+    if num_items == -1:
+        num_items = ttsp.item_num
     dominated = True
     count = 0
     ttsp_permutation = ttsp_permutation.copy()
@@ -28,7 +29,7 @@ def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities, num_item
         ttsp.renting_ratio = renting_r
         ttsp_permutation, knapsack_assignment, prof = run_greedy(ttsp, ttsp_permutation, omega,
                                                                  renting_r)
-        kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
+        #kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
         #print('before', rent, -kp_val)
         #print(((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min))
 
@@ -123,7 +124,7 @@ def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities, num_item
                         knapsack_assignment[item] = 1 - knapsack_assignment[item]
             #prof = profit(ttsp_permutation, knapsack_assignment, ttsp)
             # save_result(ttsp_permutation, knapsack_assignment, problem, prof, 0,ea='2opt')
-        kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
+        #kp_val, rent = profit(ttsp_permutation, knapsack_assignment, ttsp, True)
         #print('after', rent, -kp_val)
 
         #return (ttsp_permutation, knapsack_assignment, kp_val, rent),((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
