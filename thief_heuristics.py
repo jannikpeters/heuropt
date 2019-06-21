@@ -364,7 +364,7 @@ if __name__ == '__main__':
                 hv = hypervolume(max_hypervol)
                 to_change = hv.least_contributor(ref_point)
                 new_c = np.random.uniform(0,1)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -387,7 +387,7 @@ if __name__ == '__main__':
                 new_file = np.random.randint(0, numb_tours)
 
                 #route = ttsp_permutation.copy()
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[new_file], max_coeff[to_change], arr[to_change])
+                route, knapsack, prof = run_greedy(ttsp, tours[new_file], max_coeff[to_change], arr[to_change])
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -409,7 +409,7 @@ if __name__ == '__main__':
                 hv = hypervolume(max_hypervol)
                 to_change = hv.least_contributor(ref_point)
                 new_coeff = np.random.uniform(0,1)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -430,7 +430,7 @@ if __name__ == '__main__':
             elif change < 0.7:
                 to_change = np.random.randint(0, len(max_hypervol) - 1)
                 new_c = np.random.uniform(0,1)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], new_c)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -451,7 +451,7 @@ if __name__ == '__main__':
             elif change < 0.8:
                 to_change = np.random.randint(0, len(max_hypervol) - 1)
                 new_coeff = np.random.uniform(max_coeff[to_change]-0.2, max_coeff[to_change]+0.2)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], new_coeff, arr[to_change])
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -476,7 +476,7 @@ if __name__ == '__main__':
                 new_coeff = np.random.uniform(0,1)
                 new_c = np.random.uniform(0,1)
                 new_file = np.random.randint(0, numb_tours)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[new_file], new_coeff, new_c)
+                route, knapsack, prof = run_greedy(ttsp, tours[new_file], new_coeff, new_c)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -499,7 +499,7 @@ if __name__ == '__main__':
                     max_hypervol[to_change] = hypervol_orig
             elif change < 0.95:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]], max_coeff[to_change], arr[to_change],
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]], max_coeff[to_change], arr[to_change],
                                                                    20, 20)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
@@ -522,7 +522,7 @@ if __name__ == '__main__':
                     max_hypervol[to_change] = hypervol_orig
             else:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
-                route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[to_change]],
+                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]],
                                                                    max_coeff[to_change], arr[to_change],
                                                                    0, 10)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
