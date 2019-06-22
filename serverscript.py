@@ -129,7 +129,7 @@ def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities = -1, num
 
         #return (ttsp_permutation, knapsack_assignment, kp_val, rent),((rent - tour_min) / (tour_max - tour_min), (-kp_val + kp_min) / kp_min)
         return ttsp_permutation, knapsack_assignment, 0
-problems = ['a280_n279']
+#problems = ['a280_n279']
 # problems = ['a280_n279', 'a280_n2790', 'a280_n1395',
     #            'fnl4461_n4460', 'fnl4461_n22300', 'fnl4461_n44600',
      #           'pla33810_n33809', 'pla33810_n169045', 'pla33810_n338090']
