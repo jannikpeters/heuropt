@@ -13,12 +13,13 @@ from thief_heuristics import read_init_solution_from, run_greedy_for, reversePer
 
 
 class Problem():
-    def __init__(self, tour_min, tour_max, kp_min, path_tours, problem_name):
+    def __init__(self, tour_min, tour_max, kp_min, path_tours, problem_name, number_results):
         self.problem_name = problem_name
         self.path_tour = path_tours
         self.kp_min = kp_min
         self.tour_max = tour_max
         self.tour_min = tour_min
+        self.number_results = number_results
 
 
 class ResultSaver():
@@ -44,13 +45,14 @@ def solve(problem: Problem):
     print('solving:', problem.problem_name)
     saver = ResultSaver()
     problems = [problem.problem_name]
-    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5 / 50)]),
-                          np.array([i for i in np.arange(0.5, 0.9, 0.4 / 50)])])
+    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5 / problem.number_results / 2)]),
+                          np.array([i for i in np.arange(0.5, 0.9, 0.4 / problem.number_results / 2)])])
     tour_min = problem.tour_min
     tour_max = problem.tour_max
     kp_min = problem.kp_min
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions',
                                                                                  problems[0])
+    # Todo: This reads in a new version of a ttp instance. Check if that is ok
     max_file, ma, max_solutions, max_hypervol = run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min,
                                                                tour_max, kp_min, problem.path_tour)
     print(len(max_hypervol))
@@ -69,7 +71,7 @@ def solve(problem: Problem):
     tours = [np.ndarray([])] * 200
     best_tour = ttsp_permutation.copy()
     # arr = np.array([0]*100)
-    numb_tours = 100
+    numb_tours = problem.number_results
     for file in os.listdir(problem.path_tour):
         with open(problem.path_tour + file, 'r') as fp:
             ttsp_permutation = fp.readline()
@@ -90,7 +92,7 @@ def solve(problem: Problem):
     sols = []
     while True:
         if iterations % 2_000 == 0:
-            if iterations % 10_000 == 0:
+            if problem.number_results == 100 and iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
                     route, knapsack, prof = calculate_for(ttsp, tours[max_tours[i]],
                                                           max_coeff[i], arr[i],
@@ -399,18 +401,19 @@ def solve(problem: Problem):
 
 if __name__ == '__main__':
     a1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
-                  problem_name='a280_n279', path_tours='test_tours/a280/')
-    #solve(a1)
+                 problem_name='a280_n279', path_tours='test_tours/a280/', number_results=100)
+    solve(a1)
 
     a2 = Problem(tour_min=2613, tour_max=6769, kp_min=489194,
-                  problem_name='a280_n1395', path_tours='test_tours/a280/')
+                 problem_name='a280_n1395', path_tours='test_tours/a280/', number_results=100)
     #solve(a2)
 
     f3 = Problem(tour_min=185359, tour_max=459901, kp_min=22136989,
-                  problem_name='fnl4461_n44600', path_tours='test_tours/fnl4461/')
+                 problem_name='fnl4461_n44600', path_tours='test_tours/fnl4461/', number_results=50)
 
     solve(f3)
 
     p3 = Problem(tour_min=66048945, tour_max=169605428.0, kp_min=168033267,
-                  problem_name='pla33810_n338090', path_tours='test_tours/pla33810/')
+                 problem_name='pla33810_n338090', path_tours='test_tours/pla33810/',
+                 number_results=20)
     solve(p3)
