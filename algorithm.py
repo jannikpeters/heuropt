@@ -22,7 +22,7 @@ class Problem():
         self.number_results = number_results
 
 
-class ResultSaver():
+class ResultSaver:
     def __init__(self):
         self.start_wall_clock_time = time.time()
         self.start_proc_time = time.process_time()
@@ -33,7 +33,7 @@ class ResultSaver():
         wall_time = time.time() - self.start_wall_clock_time
         print('SAVING RESULT:', hv, 'after:', wall_time)
         with open('bittp_solutions/Gruppe B_' + filename.replace('_', '-') + '.csv', 'a') as csv:
-            csv.write(str(hv) + ',' + str(proc_time) + ',' + str(wall_time) + '\n')
+            csv.write(str(hv) + ',' + str(proc_time) + '\n')
         save_result(solution, filename, str(proc_time))
         self.results_saved += 1
         if wall_time >= 60*10 and self.results_saved >= 10:
@@ -94,6 +94,7 @@ def solve(problem: Problem):
     sols = []
     while True:
         if iterations % 2_000 == 0:
+            #dont run for anything but a280
             if problem.number_results == 100 and iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
                     route, knapsack, prof = calculate_for(ttsp, tours[max_tours[i]],
@@ -401,21 +402,41 @@ def solve(problem: Problem):
                     max_hypervol[to_change] = hypervol_orig
 
 
-if __name__ == '__main__':
+def main():
     a1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
                  problem_name='a280_n279', path_tours='test_tours/a280/', number_results=100)
-    solve(a1)
 
     a2 = Problem(tour_min=2613, tour_max=6769, kp_min=489194,
                  problem_name='a280_n1395', path_tours='test_tours/a280/', number_results=100)
-    #solve(a2)
+
+    a3 = Problem(tour_min=2613, tour_max=6646, kp_min=1375443,
+                 problem_name='a280_n2790', path_tours='test_tours/a280/', number_results=100)
+
+    f1 = Problem(tour_min=185359, tour_max=458389, kp_min=645150,
+                 problem_name='fnl4461_n4460', path_tours='test_tours/fnl4461/', number_results=50)
+
+    f2 = Problem(tour_min=185359, tour_max=458389, kp_min=7827881,
+                 problem_name='fnl4461_n22300', path_tours='test_tours/fnl4461/', number_results=50)
 
     f3 = Problem(tour_min=185359, tour_max=459901, kp_min=22136989,
                  problem_name='fnl4461_n44600', path_tours='test_tours/fnl4461/', number_results=50)
 
-    solve(f3)
+    p1 = Problem(tour_min=66048945, tour_max=168432301, kp_min=4860715,
+                 problem_name='pla33810_n33809', path_tours='test_tours/pla33810/',
+                 number_results=20)
 
-    p3 = Problem(tour_min=66048945, tour_max=169605428.0, kp_min=168033267,
+    p2 = Problem(tour_min=66048945, tour_max=169415148, kp_min=59472432,
+                 problem_name='pla33810_n169045', path_tours='test_tours/pla33810/',
+                 number_results=20)
+
+    p3 = Problem(tour_min=66048945, tour_max=169605428, kp_min=168033267,
                  problem_name='pla33810_n338090', path_tours='test_tours/pla33810/',
                  number_results=20)
-    solve(p3)
+
+    to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
+    for prob in to_solve:
+        solve(prob)
+
+
+if __name__ == '__main__':
+   main()
