@@ -45,8 +45,10 @@ def solve(problem: Problem):
     print('solving:', problem.problem_name)
     saver = ResultSaver()
     problems = [problem.problem_name]
-    arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5 / problem.number_results / 2)]),
-                          np.array([i for i in np.arange(0.5, 0.9, 0.4 / problem.number_results / 2)])])
+    arr = np.concatenate(
+        [np.array([i for i in np.arange(0, 0.5, 0.5 / (problem.number_results / 2))]),
+            np.array([i for i in np.arange(0.5, 0.9, 0.4 / (problem.number_results / 2))])])
+
     tour_min = problem.tour_min
     tour_max = problem.tour_max
     kp_min = problem.kp_min
