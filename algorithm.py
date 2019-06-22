@@ -1,10 +1,11 @@
 import ast
 import os
 import time
+from multiprocessing.pool import Pool
 
 import numpy as np
 from pygmo import hypervolume, non_dominated_front_2d
-from scipy.spatial import KDTree
+from scipy.spatial import cKDTree as KDTree
 
 from serverscript import calculate_for
 from evaluation_function import profit
@@ -57,6 +58,12 @@ def solve(problem: Problem):
     # Todo: This reads in a new version of a ttp instance. Check if that is ok
     max_file, ma, max_solutions, max_hypervol = run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min,
                                                                tour_max, kp_min, problem.path_tour)
+
+    ref_point = [1, 1]
+    first_hv = hypervolume(max_hypervol)
+    first_c = first_hv.compute(ref_point)
+    should_stop = saver.save_result(max_solutions, problems[0], first_c)
+
     print(len(max_hypervol))
     max_tours = [int(max_file[1])] * 100
     max_coeff = [0.6] * 100
@@ -68,7 +75,7 @@ def solve(problem: Problem):
         # ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
         ttsp_permutation = np.array(ttsp_permutation)
 
-    ref_point = [1, 1]
+
     # tours = [1] * 200
     tours = [np.ndarray([])] * 200
     best_tour = ttsp_permutation.copy()
@@ -402,7 +409,7 @@ def solve(problem: Problem):
                     max_hypervol[to_change] = hypervol_orig
 
 
-def main():
+def main(parallel=True):
     a1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
                  problem_name='a280_n279', path_tours='test_tours/a280/', number_results=100)
 
@@ -434,8 +441,14 @@ def main():
                  number_results=20)
 
     to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
-    for prob in to_solve:
-        solve(prob)
+    if parallel:
+        with Pool() as p:
+            p.map(solve, to_solve)
+    else:
+        for prob in to_solve:
+            solve(prob)
+
+
 
 
 if __name__ == '__main__':
