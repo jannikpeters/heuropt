@@ -431,15 +431,15 @@ def main(parallel=True):
 
     p1 = Problem(tour_min=66048945, tour_max=168432301, kp_min=4860715,
                  problem_name='pla33810_n33809', path_tours='test_tours/pla33810/',
-                 number_results=20, number_tours = 2)
+                 number_results=20, number_tours = 1)
 
     p2 = Problem(tour_min=66048945, tour_max=169415148, kp_min=59472432,
                  problem_name='pla33810_n169045', path_tours='test_tours/pla33810/',
-                 number_results=20, number_tours=2)
+                 number_results=20, number_tours=1)
 
     p3 = Problem(tour_min=66048945, tour_max=169605428, kp_min=168033267,
                  problem_name='pla33810_n338090', path_tours='test_tours/pla33810/',
-                 number_results=20,number_tours=2)
+                 number_results=20,number_tours=1)
 
     to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
     if parallel:
