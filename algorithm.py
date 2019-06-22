@@ -414,7 +414,7 @@ def solve(problem: Problem):
                     max_hypervol[to_change] = hypervol_orig
 
 
-def main(parallel=True):
+def main(parallel=False):
     a1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
                  problem_name='a280_n279', path_tours='test_tours/a280/', number_results=100)
 
@@ -445,7 +445,7 @@ def main(parallel=True):
                  problem_name='pla33810_n338090', path_tours='test_tours/pla33810/',
                  number_results=20,number_tours=1)
 
-    to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
+    to_solve = [p3]
     if parallel:
         cores = os.cpu_count() - 2 if os.cpu_count() > 4 else os.cpu_count()
         #leave some wiggle room
