@@ -8,6 +8,7 @@ from pygmo import *
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, save_result, run_greedy
 from ttsp_heuristics import greedy_ttsp
+
 def calculate_for(ttsp, ttsp_permutation, omega, renting_r, num_cities = -1, num_items= -1):
     if num_cities == -1:
         num_cities = ttsp.dim

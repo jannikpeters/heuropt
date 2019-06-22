@@ -1,11 +1,12 @@
 import ast
 import os
+import time
 
 import numpy as np
 from pygmo import hypervolume, non_dominated_front_2d
 from scipy.spatial import KDTree
 
-import serverscript
+from serverscript import calculate_for
 from evaluation_function import profit
 from thief_heuristics import read_init_solution_from, run_greedy_for, reversePerm, save_result, \
     run_greedy
@@ -21,6 +22,7 @@ class Problem():
 
 
 def solve(problem: Problem):
+    start = time.time()
     problems = [problem.problem_name]
     # , 'a280_n2790', 'a280_n1395'
     # ]
@@ -76,7 +78,7 @@ def solve(problem: Problem):
         if iterations % 2000 == 0:
             if iterations % 10000 == 0:
                 for i in range(1, len(max_hypervol)):
-                    route, knapsack, prof = serverscript.calculate_for(ttsp, tours[max_tours[i]],
+                    route, knapsack, prof = calculate_for(ttsp, tours[max_tours[i]],
                                                                        max_coeff[i], arr[i],
                                                                        ttsp.dim, ttsp.item_num)
                     kp_val, rent = profit(route, knapsack, ttsp, True)
@@ -99,7 +101,7 @@ def solve(problem: Problem):
 
                     else:
                         max_hypervol[i] = hypervol_orig
-
+            print('Saving Result! after', time.time() - start)
             save_result(max_solutions, problems[0])
             # plt.scatter(*zip(*max_hypervol), label='Curve after ' + str(iterations) + ' iterations')
             # plt.show()
@@ -327,7 +329,7 @@ def solve(problem: Problem):
                     max_hypervol[to_change] = hypervol_orig
             elif change < 0.95:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
-                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]],
+                route, knapsack, prof = calculate_for(ttsp, tours[max_tours[to_change]],
                                                    max_coeff[to_change], arr[to_change],
                                                    20, 20)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
@@ -352,7 +354,7 @@ def solve(problem: Problem):
                     max_hypervol[to_change] = hypervol_orig
             else:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
-                route, knapsack, prof = run_greedy(ttsp, tours[max_tours[to_change]],
+                route, knapsack, prof = calculate_for(ttsp, tours[max_tours[to_change]],
                                                    max_coeff[to_change], arr[to_change],
                                                    0, 10)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
