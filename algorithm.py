@@ -52,7 +52,7 @@ def solve(problem: Problem):
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions',
                                                                                  problems[0])
     max_file, ma, max_solutions, max_hypervol = run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min,
-                                                               tour_max, kp_min)
+                                                               tour_max, kp_min, problem.path_tour)
     print(len(max_hypervol))
     max_tours = [int(max_file[1])] * 100
     max_coeff = [0.6] * 100
@@ -400,13 +400,17 @@ def solve(problem: Problem):
 if __name__ == '__main__':
     a1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
                   problem_name='a280_n279', path_tours='test_tours/a280/')
-    solve(a1)
+    #solve(a1)
+
     a2 = Problem(tour_min=2613, tour_max=6769, kp_min=489194,
                   problem_name='a280_n1395', path_tours='test_tours/a280/')
-    solve(a2)
+    #solve(a2)
+
     f3 = Problem(tour_min=185359, tour_max=459901, kp_min=22136989,
                   problem_name='fnl4461_n44600', path_tours='test_tours/fnl4461/')
 
     solve(f3)
+
     p3 = Problem(tour_min=66048945, tour_max=169605428.0, kp_min=168033267,
                   problem_name='pla33810_n338090', path_tours='test_tours/pla33810/')
+    solve(p3)

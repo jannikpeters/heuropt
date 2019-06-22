@@ -111,15 +111,16 @@ def return_bin_vals(n, p):
     return np.random.choice(n, number_of_changes, replace=False)
 
 
-def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min, tour_max, kp_min):
+def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min, tour_max,
+                   kp_min, path):
     for problem in problems:
         ma = 0
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problem)
         solutions_vec = []
         hypervol_vec = []
         count = 0
-        for file in os.listdir('test_tours/a280/'):
-            with open('test_tours/a280/' + file, 'r') as fp:
+        for file in os.listdir(path):
+            with open(path + file, 'r') as fp:
                 ttsp_permutation = fp.readline()
                 ttsp_permutation = ast.literal_eval(ttsp_permutation)
                 del(ttsp_permutation[-1])
