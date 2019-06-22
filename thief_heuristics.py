@@ -54,13 +54,6 @@ def save_result_old(route, knapsack, filename, profit, fact,renting_ratio, ea='g
         f.write(solution)
 
 
-def save_results_after_time(solution, filename, wall_clock_time, hv):
-    print('SAVING RESULT:', hv, 'after:', wall_clock_time )
-    proc_time = time.process_time()
-    with open('bittp_solutions/Gruppe B_' + filename.replace('_','-') + '.csv', 'a') as csv:
-       csv.write(str(hv)+','+str(proc_time)+','+str(wall_clock_time)+'\n')
-    save_result(solution, filename, str(proc_time))
-
 
 
 def save_result(solution, filename, timestamp=''):

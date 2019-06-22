@@ -8,8 +8,8 @@ from scipy.spatial import KDTree
 
 from serverscript import calculate_for
 from evaluation_function import profit
-from thief_heuristics import read_init_solution_from, run_greedy_for, reversePerm, save_results_after_time, \
-    run_greedy
+from thief_heuristics import read_init_solution_from, run_greedy_for, reversePerm, \
+    run_greedy, save_result
 
 
 class Problem():
@@ -21,10 +21,28 @@ class Problem():
         self.tour_min = tour_min
 
 
+class ResultSaver():
+    def __init__(self):
+        self.start_wall_clock_time = time.time()
+        self.start_proc_time = time.process_time()
+        self.results_saved = 0
+
+    def save_result(self, solution, filename, hv):
+        proc_time = time.process_time() - self.start_proc_time
+        wall_time = time.time() - self.start_wall_clock_time
+        print('SAVING RESULT:', hv, 'after:', wall_time)
+        with open('bittp_solutions/Gruppe B_' + filename.replace('_', '-') + '.csv', 'a') as csv:
+            csv.write(str(hv) + ',' + str(proc_time) + ',' + str(wall_time) + '\n')
+        save_result(solution, filename, str(proc_time))
+        self.results_saved += 1
+        if wall_time >= 60*10 and self.results_saved >= 10:
+            return True
+        return False
+
+
 def solve(problem: Problem):
-    start_time = time.time()
-    start_time_proc = time.process_time()
-    print('start time proc', start_time_proc)
+    print('solving:', problem.problem_name)
+    saver = ResultSaver()
     problems = [problem.problem_name]
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5 / 50)]),
                           np.array([i for i in np.arange(0.5, 0.9, 0.4 / 50)])])
@@ -47,7 +65,7 @@ def solve(problem: Problem):
         ttsp_permutation = np.array(ttsp_permutation)
 
     ref_point = [1, 1]
-    #tours = [1] * 200
+    # tours = [1] * 200
     tours = [np.ndarray([])] * 200
     best_tour = ttsp_permutation.copy()
     # arr = np.array([0]*100)
@@ -75,8 +93,8 @@ def solve(problem: Problem):
             if iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
                     route, knapsack, prof = calculate_for(ttsp, tours[max_tours[i]],
-                                                                       max_coeff[i], arr[i],
-                                                                       ttsp.dim, ttsp.item_num)
+                                                          max_coeff[i], arr[i],
+                                                          ttsp.dim, ttsp.item_num)
                     kp_val, rent = profit(route, knapsack, ttsp, True)
                     # print(rent)
                     if rent > tour_max:
@@ -97,14 +115,16 @@ def solve(problem: Problem):
 
                     else:
                         max_hypervol[i] = hypervol_orig
-            #print('Saving Result! after', time.time() - start_time, 'also proc',
+            # print('Saving Result! after', time.time() - start_time, 'also proc',
             #     time.process_time())
-            #save_result(max_solutions, problems[0])
+            # save_result(max_solutions, problems[0])
             # plt.scatter(*zip(*max_hypervol), label='Curve after ' + str(iterations) + ' iterations')
             # plt.show()
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
-            save_results_after_time(max_solutions, problems[0], time.time() - start_time, c)
+            should_stop = saver.save_result(max_solutions, problems[0], c)
+            if should_stop:
+                return
             # print(max_coeff)
             # print(arr)
             # print(max_tours)
@@ -328,8 +348,8 @@ def solve(problem: Problem):
             elif change < 0.95:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
                 route, knapsack, prof = calculate_for(ttsp, tours[max_tours[to_change]],
-                                                   max_coeff[to_change], arr[to_change],
-                                                   20, 20)
+                                                      max_coeff[to_change], arr[to_change],
+                                                      20, 20)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -353,8 +373,8 @@ def solve(problem: Problem):
             else:
                 to_change = np.random.randint(1, len(max_hypervol) - 1)
                 route, knapsack, prof = calculate_for(ttsp, tours[max_tours[to_change]],
-                                                   max_coeff[to_change], arr[to_change],
-                                                   0, 10)
+                                                      max_coeff[to_change], arr[to_change],
+                                                      0, 10)
                 kp_val, rent = profit(route, knapsack, ttsp, True)
                 # print(rent)
                 if rent > tour_max:
@@ -378,6 +398,15 @@ def solve(problem: Problem):
 
 
 if __name__ == '__main__':
-    pa1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
-                 problem_name='a280_n279', path_tours='test_tours/a280/')
-    solve(pa1)
+    a1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
+                  problem_name='a280_n279', path_tours='test_tours/a280/')
+    solve(a1)
+    a2 = Problem(tour_min=2613, tour_max=6769, kp_min=489194,
+                  problem_name='a280_n1395', path_tours='test_tours/a280/')
+    solve(a2)
+    f3 = Problem(tour_min=185359, tour_max=459901, kp_min=22136989,
+                  problem_name='fnl4461_n44600', path_tours='test_tours/fnl4461/')
+
+    solve(f3)
+    p3 = Problem(tour_min=66048945, tour_max=169605428.0, kp_min=168033267,
+                  problem_name='pla33810_n338090', path_tours='test_tours/pla33810/')
