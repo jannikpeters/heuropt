@@ -72,8 +72,10 @@ def solve(problem: Problem):
     with open(problem.path_tour + max_file, 'r') as fp:
         ttsp_permutation = fp.readline()
         ttsp_permutation = ast.literal_eval(ttsp_permutation)
-        del (ttsp_permutation[-1])
-        # ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+        if problem[0] == 'p':
+            ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+        else:
+            del (ttsp_permutation[-1])
         ttsp_permutation = np.array(ttsp_permutation)
 
 
@@ -86,8 +88,10 @@ def solve(problem: Problem):
         with open(problem.path_tour + file, 'r') as fp:
             ttsp_permutation = fp.readline()
             ttsp_permutation = ast.literal_eval(ttsp_permutation)
-            del (ttsp_permutation[-1])
-            # ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+            if problem[0] == 'p':
+                ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+            else:
+                del (ttsp_permutation[-1])
             ttsp_permutation = np.array(ttsp_permutation)
             tours[int(file[:5])] = ttsp_permutation.copy()
             tours[numb_tours + int(file[:5])] = reversePerm(ttsp_permutation).copy()

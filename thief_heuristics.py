@@ -123,8 +123,11 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
             with open(path + file, 'r') as fp:
                 ttsp_permutation = fp.readline()
                 ttsp_permutation = ast.literal_eval(ttsp_permutation)
-                del(ttsp_permutation[-1])
-                #ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+                if problem[0] == 'p':
+                    ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
+                else:
+                    del(ttsp_permutation[-1])
+                #
                 ttsp_permutation = np.array(ttsp_permutation)
             #ttsp_permutation = np.random.permutation(ttsp.dim)
             #print('Greedy For:')
