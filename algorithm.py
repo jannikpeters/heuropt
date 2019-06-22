@@ -8,7 +8,7 @@ from scipy.spatial import KDTree
 
 from serverscript import calculate_for
 from evaluation_function import profit
-from thief_heuristics import read_init_solution_from, run_greedy_for, reversePerm, save_result, \
+from thief_heuristics import read_init_solution_from, run_greedy_for, reversePerm, save_results_after_time, \
     run_greedy
 
 
@@ -22,14 +22,10 @@ class Problem():
 
 
 def solve(problem: Problem):
-    start = time.time()
+    start_time = time.time()
+    start_time_proc = time.process_time()
+    print('start time proc', start_time_proc)
     problems = [problem.problem_name]
-    # , 'a280_n2790', 'a280_n1395'
-    # ]
-
-    # plt.xlabel('iteration')
-    # plt.ylabel('hypervolume')
-    # plt.title('Figure 3: Hypervolume over time with restarts ' + problems[0])
     arr = np.concatenate([np.array([i for i in np.arange(0, 0.5, 0.5 / 50)]),
                           np.array([i for i in np.arange(0.5, 0.9, 0.4 / 50)])])
     tour_min = problem.tour_min
@@ -75,8 +71,8 @@ def solve(problem: Problem):
     ma = hv.compute(ref_point)
     sols = []
     while True:
-        if iterations % 2000 == 0:
-            if iterations % 10000 == 0:
+        if iterations % 2_000 == 0:
+            if iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
                     route, knapsack, prof = calculate_for(ttsp, tours[max_tours[i]],
                                                                        max_coeff[i], arr[i],
@@ -101,12 +97,14 @@ def solve(problem: Problem):
 
                     else:
                         max_hypervol[i] = hypervol_orig
-            print('Saving Result! after', time.time() - start)
-            save_result(max_solutions, problems[0])
+            #print('Saving Result! after', time.time() - start_time, 'also proc',
+            #     time.process_time())
+            #save_result(max_solutions, problems[0])
             # plt.scatter(*zip(*max_hypervol), label='Curve after ' + str(iterations) + ' iterations')
             # plt.show()
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
+            save_results_after_time(max_solutions, problems[0], time.time() - start_time, c)
             # print(max_coeff)
             # print(arr)
             # print(max_tours)
@@ -380,6 +378,6 @@ def solve(problem: Problem):
 
 
 if __name__ == '__main__':
-    pa1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036.,
+    pa1 = Problem(tour_min=2613, tour_max=7856, kp_min=42036,
                  problem_name='a280_n279', path_tours='test_tours/a280/')
     solve(pa1)

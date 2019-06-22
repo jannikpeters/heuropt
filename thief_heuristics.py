@@ -53,8 +53,18 @@ def save_result_old(route, knapsack, filename, profit, fact,renting_ratio, ea='g
         solution = create_solution_string(route, knapsack)
         f.write(solution)
 
-def save_result(solution, filename):
 
+def save_results_after_time(solution, filename, wall_clock_time, hv):
+    print('SAVING RESULT:', hv, 'after:', wall_clock_time )
+    proc_time = time.process_time()
+    with open('bittp_solutions/Gruppe B_' + filename.replace('_','-') + '.csv', 'a') as csv:
+       csv.write(str(hv)+','+str(proc_time)+','+str(wall_clock_time)+'\n')
+    save_result(solution, filename, str(proc_time))
+
+
+
+def save_result(solution, filename, timestamp=''):
+    timestamp = '-'+timestamp if timestamp else ''
     f_str = ''
     x_str = ''
     for r,k, kp_val, tour_length in solution:
@@ -63,10 +73,11 @@ def save_result(solution, filename):
 
     if not os.path.exists('bittp_solutions/' + filename):
         os.makedirs('bittp_solutions/' + filename)
-    with open('bittp_solutions/' + filename + '/' + 'Gruppe B_' +  filename.replace('_','-') + '.x',
+    path = 'bittp_solutions/' + filename + '/' + 'Gruppe B_' + filename.replace('_','-')
+    with open(path + timestamp + '.x',
               'w') as f:
         f.write(f_str)
-    with open('bittp_solutions/' + filename + '/' + 'Gruppe B_' +  filename.replace('_','-') + '.f',
+    with open(path + timestamp + '.f',
               'w') as f:
         f.write(x_str)
 
