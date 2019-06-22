@@ -442,7 +442,9 @@ def main(parallel=True):
 
     to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
     if parallel:
-        with Pool() as p:
+        cores = os.cpu_count() - 2 if os.cpu_count() > 4 else os.cpu_count()
+        #leave some wiggle room
+        with Pool(cores) as p:
             p.map(solve, to_solve)
     else:
         for prob in to_solve:
