@@ -63,7 +63,7 @@ def solve(problem: Problem):
     ref_point = [1, 1]
     first_hv = hypervolume(max_hypervol)
     first_c = first_hv.compute(ref_point)
-    should_stop = saver.save_result(max_solutions, problems[0], first_c)
+    saver.save_result(max_solutions, problems[0], first_c)
 
     print(len(max_hypervol))
     max_tours = [int(max_file[1])] * 100
@@ -72,7 +72,7 @@ def solve(problem: Problem):
     with open(problem.path_tour + max_file, 'r') as fp:
         ttsp_permutation = fp.readline()
         ttsp_permutation = ast.literal_eval(ttsp_permutation)
-        if problem[0] == 'p':
+        if problem.problem_name[0] == 'p':
             ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
         else:
             del (ttsp_permutation[-1])
@@ -88,7 +88,7 @@ def solve(problem: Problem):
         with open(problem.path_tour + file, 'r') as fp:
             ttsp_permutation = fp.readline()
             ttsp_permutation = ast.literal_eval(ttsp_permutation)
-            if problem[0] == 'p':
+            if problem.problem_name[0] == 'p':
                 ttsp_permutation[:] = [x - 1 for x in ttsp_permutation]
             else:
                 del (ttsp_permutation[-1])
