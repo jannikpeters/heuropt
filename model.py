@@ -2,14 +2,21 @@ import itertools
 import os
 from functools import lru_cache
 import numpy as np
-from numba import jitclass
+from numba import jitclass, njit
 import numba as nb
 from scipy.spatial.distance import pdist, squareform
+
+@njit
+def dist_opt(first, second, node_coord):
+    return np.ceil(np.sqrt((node_coord[first, 0] - node_coord[second, 0]) ** 2 + (
+                node_coord[first, 1] - node_coord[second, 1]) ** 2))
+
 
 class TTSP:
 
     def dist(self, first, second):
-        return self.dist_cache[first, second]
+        return dist_opt(first, second, self.node_coord)
+
 
     @lru_cache()
     def old_dist(self, first, second):
@@ -20,7 +27,7 @@ class TTSP:
 
 
 
-    def __init__(self, file):
+    def __init__(self, file, use_cache=True):
         fp = open(file, 'r')
 
         line = fp.readline()
@@ -85,14 +92,14 @@ class TTSP:
 
 
         #The graphs should be the same for all files with the same first part of the name, right?
-        dist_cache_name = 'pickles/'+file.split('/')[1].split('_')[0]+'_dist'
-        if os.path.isfile(dist_cache_name+'.npy'):
-            print('Loading', dist_cache_name, 'from Cache')
-            self.dist_cache = np.load(dist_cache_name+'.npy')
-        else:
-            self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32,
-                                                                                copy=False))
-        np.save(dist_cache_name, self.dist_cache)
+        # dist_cache_name = 'pickles/'+file.split('/')[1].split('_')[0]+'_dist'
+        # if os.path.isfile(dist_cache_name+'.npy'):
+        #     print('Loading', dist_cache_name, 'from Cache')
+        #     self.dist_cache = np.load(dist_cache_name+'.npy')
+        # else:
+        #     self.dist_cache = squareform(np.ceil(pdist(self.node_coord)).astype(np.int32,
+        #                                                                         copy=False))
+        #     np.save(dist_cache_name, self.dist_cache)
         self.normalizing_constant = (self.max_speed - self.min_speed) / self.knapsack_capacity
         self.ttp_opt = TTP_OPT(self.dim, self.item_num, self.knapsack_capacity, self.min_speed,
                                self.max_speed, self.normalizing_constant, self.renting_ratio,
