@@ -139,9 +139,11 @@ def solve(problem: Problem):
             # plt.show()
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
-            should_stop = saver.save_result(max_solutions, problems[0], c)
-            if should_stop:
-                return
+            # we save here only for a280 or if it is not the first run
+            if iterations > 0 or problem.number_results == 100:
+                should_stop = saver.save_result(max_solutions, problems[0], c)
+                if should_stop:
+                    return
             # print(max_coeff)
             # print(arr)
             # print(max_tours)
