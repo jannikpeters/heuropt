@@ -172,7 +172,7 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
             if c > ma:
                 ma = c
                 max_file = file
-                save_result(solutions, problem + file)
+                #save_result(solutions, problem + file)
                 max_solutions = solutions.copy()
                 max_hypervol = hypervol.copy()
 

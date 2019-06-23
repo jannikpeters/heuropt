@@ -1,6 +1,8 @@
 import math
 
-from model import TTSP
+from numba import njit
+
+from model import TTSP, TTP_OPT
 from evaluation_function import profit, dist_to_opt
 import numpy as np
 from random import randint
@@ -32,6 +34,15 @@ class NeighrestNeighbors:
         print(len(permutation))
         return permutation
 
+@njit
+def groupcGreedy_opt(ttp: TTP_OPT, old_rr, item, omega, alpha, dist):
+    return alpha * ttp.item_profit[item] - (1 - alpha) * old_rr * dist[
+        ttp.item_node[item]] * \
+           (1 / (ttp.max_speed - (
+                       omega + ttp.item_weight[item] / ttp.knapsack_capacity) * (
+                             ttp.max_speed - ttp.min_speed))
+            - 1 / (ttp.max_speed - omega * (ttp.max_speed - ttp.min_speed)))
+
 
 class greedy_ttsp:
     def __init__(self, ttsp: TTSP, ttsp_permutation):
@@ -43,6 +54,10 @@ class greedy_ttsp:
                     (self.ttsp.item_weight[item] ** factor) * dist[self.ttsp.item_node[item]])
 
     def groupcGreedy(self, item, omega, alpha, dist):
+        return groupcGreedy_opt(self.ttsp.ttp_opt, self.ttsp.old_rr, item, omega, alpha, dist)
+
+
+    def groupcGreedy_old(self, item, omega, alpha, dist):
         return alpha*self.ttsp.item_profit[item]-(1-alpha)*self.ttsp.old_rr*dist[self.ttsp.item_node[item]]*\
                (1/ (self.ttsp.max_speed-(omega+self.ttsp.item_weight[item]/self.ttsp.knapsack_capacity)*(self.ttsp.max_speed - self.ttsp.min_speed))
                 -1/(self.ttsp.max_speed-omega*(self.ttsp.max_speed - self.ttsp.min_speed)))
@@ -89,12 +104,6 @@ class greedy_ttsp:
         actual_profit = [0] * self.ttsp.item_num
         v = (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity
         for item in range(self.ttsp.item_num):
-            #speed_loss = -self.ttsp.renting_ratio / (self.ttsp.max_speed - self.ttsp.item_weight[item] *v)
-            #actual_profit[item] = ((self.ttsp.item_profit[item] + coefficient*((dist[self.ttsp.item_node[item]]
-            #                                               * speed_loss) + (self.ttsp.renting_ratio * dist[
-            #                         self.ttsp.item_node[item]]))) / (0.5*self.ttsp.item_weight[item]), item)
-            #actual_profit[item] = (self.testCoefficient(item, coefficient, dist), item)
-            # actual_profit[item] = (self.opt_dist(item, dist, v), item)
             actual_profit[item] = (self.groupcGreedy(item, factor, coefficient, dist)/self.ttsp.item_weight[item], item)
         actual_profit.sort()
         # print(actual_profit)
