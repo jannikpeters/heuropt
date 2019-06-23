@@ -102,7 +102,7 @@ class greedy_ttsp:
         dist = dist_to_opt(self.ttsp_permutation, self.ttsp)
         # print(dist)
         actual_profit = [0] * self.ttsp.item_num
-        v = (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity
+        # v = (self.ttsp.max_speed - self.ttsp.min_speed) / self.ttsp.knapsack_capacity
         for item in range(self.ttsp.item_num):
             actual_profit[item] = (self.groupcGreedy(item, factor, coefficient, dist)/self.ttsp.item_weight[item], item)
         actual_profit.sort()
@@ -110,9 +110,9 @@ class greedy_ttsp:
         # print(actual_profit)
         weight = 0
         assignment = np.zeros(self.ttsp.item_num, dtype=np.bool)
-        best_assignment = np.zeros(self.ttsp.item_num, dtype=np.bool)
+        #best_assignment = np.zeros(self.ttsp.item_num, dtype=np.bool)
         count = 0
-        max_val = profit(self.ttsp_permutation, assignment, self.ttsp)
+        #max_val = profit(self.ttsp_permutation, assignment, self.ttsp)
         last_i = []
         j = 0
         while j < self.ttsp.item_num:
@@ -140,7 +140,7 @@ class greedy_ttsp:
                     last_i = []'''
             j += 1
             count += 1
-        tour = self.ttsp_permutation
+        #tour = self.ttsp_permutation
         '''while True:
             start_profit = profit(tour, assignment, self.ttsp)
             assignment = self.local_search(assignment, tour)
