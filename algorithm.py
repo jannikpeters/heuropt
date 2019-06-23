@@ -117,7 +117,7 @@ def solve(problem: Problem):
     while True:
         if iterations % 2_000 == 0 \
                 or (problem.number_results == 20 and iterations % 250 == 0)\
-                or (problem.number_results == 50 and iterations % 500):
+                or (problem.number_results == 50 and iterations % 500 == 0):
             #dont run for anything but a280
             if problem.number_results == 100 and iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
@@ -460,7 +460,7 @@ def main(parallel=True):
                  number_results=20,number_tours=1)
 
     to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
-    #to_solve = [a1]
+    to_solve = [f1, f2, f3,]
     if parallel:
         cores = os.cpu_count() - 2 if os.cpu_count() > 4 else os.cpu_count()
         #leave some wiggle room
@@ -474,6 +474,6 @@ def main(parallel=True):
 
 
 if __name__ == '__main__':
-   main()
+   main(False)
    #import cProfile
    #cProfile.run('main(False)')
