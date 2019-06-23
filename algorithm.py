@@ -460,7 +460,7 @@ def main(parallel=True):
                  number_results=20,number_tours=1)
 
     to_solve = [a1, a2, a3, f1, f2, f3, p1, p2, p3]
-    to_solve = [f1, f2, f3,]
+    #to_solve = [f1, f2, f3,]
     if parallel:
         cores = os.cpu_count() - 2 if os.cpu_count() > 4 else os.cpu_count()
         #leave some wiggle room
@@ -474,6 +474,6 @@ def main(parallel=True):
 
 
 if __name__ == '__main__':
-   main(False)
+   main()
    #import cProfile
    #cProfile.run('main(False)')
