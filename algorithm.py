@@ -38,7 +38,7 @@ class ResultSaver:
             csv.write(str(hv) + ',' + str(proc_time) + '\n')
         save_result(solution, filename, str(proc_time))
         self.results_saved += 1
-        if wall_time >= 60*10 and self.results_saved >= 10:
+        if wall_time >= 60*15 and self.results_saved >= 10:
             return True
         return False
 
