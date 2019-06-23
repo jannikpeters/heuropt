@@ -112,7 +112,7 @@ def return_bin_vals(n, p):
 
 
 def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min, tour_max,
-                   kp_min, path):
+                   kp_min, path, one_run):
     for problem in problems:
         ma = 0
         ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions', problem)
@@ -175,6 +175,9 @@ def run_greedy_for(problems, fact_start, fact_stop, fact_steps, ratios,tour_min,
                 #save_result(solutions, problem + file)
                 max_solutions = solutions.copy()
                 max_hypervol = hypervol.copy()
+
+            if one_run:
+                break
 
             #plt.scatter(*zip(*hypervol))
             #plt.show()

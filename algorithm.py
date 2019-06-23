@@ -38,7 +38,7 @@ class ResultSaver:
             csv.write(str(hv) + ',' + str(proc_time) + '\n')
         save_result(solution, filename, str(proc_time))
         self.results_saved += 1
-        if wall_time >= 60*10 and self.results_saved >= 10:
+        if wall_time >= 60*15 and self.results_saved >= 10:
             return True
         return False
 
@@ -56,14 +56,25 @@ def solve(problem: Problem):
     kp_min = problem.kp_min
     ttsp, knapsack_original, ttsp_permutation_original = read_init_solution_from('solutions',
                                                                                  problems[0])
-    # Todo: This reads in a new version of a ttp instance. Check if that is ok
-    max_file, ma, max_solutions, max_hypervol = run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min,
-                                                               tour_max, kp_min, problem.path_tour)
 
+    if problem.number_results > 20: # for a and fnl get quick early solution for one graph
+        # Todo: This reads in a new version of a ttp instance. Check if that is ok
+        max_file, ma, max_solutions, max_hypervol = run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min,
+                                                                   tour_max, kp_min,
+                                                                   problem.path_tour, True)
+
+        ref_point = [1, 1]
+        first_hv = hypervolume(max_hypervol)
+        first_c = first_hv.compute(ref_point)
+        saver.save_result(max_solutions, problems[0], first_c)
+
+    max_file, ma, max_solutions, max_hypervol = run_greedy_for(problems, 0.6, 0.9, 1, arr, tour_min,
+                                                               tour_max, kp_min,
+                                                               problem.path_tour,False)
     ref_point = [1, 1]
-    first_hv = hypervolume(max_hypervol)
-    first_c = first_hv.compute(ref_point)
-    saver.save_result(max_solutions, problems[0], first_c)
+    second_hv = hypervolume(max_hypervol)
+    second_c = second_hv.compute(ref_point)
+    saver.save_result(max_solutions, problems[0], second_c)
 
     print(len(max_hypervol))
     max_tours = [int(max_file[1])] * 100
@@ -103,9 +114,10 @@ def solve(problem: Problem):
     tree = KDTree(ttsp.node_coord)
     hv = hypervolume(max_hypervol)
     ma = hv.compute(ref_point)
-    sols = []
     while True:
-        if iterations % 2_000 == 0 or (problem.number_results == 20 and iterations % 400 == 0):
+        if iterations % 2_000 == 0 \
+                or (problem.number_results == 20 and iterations % 250 == 0)\
+                or (problem.number_results == 50 and iterations % 500):
             #dont run for anything but a280
             if problem.number_results == 100 and iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
@@ -139,9 +151,11 @@ def solve(problem: Problem):
             # plt.show()
             hv = hypervolume(max_hypervol)
             c = hv.compute(ref_point)
-            should_stop = saver.save_result(max_solutions, problems[0], c)
-            if should_stop:
-                return
+            # we save here only for a280 or if it is not the first run
+            if iterations > 0 or problem.number_results == 100:
+                should_stop = saver.save_result(max_solutions, problems[0], c)
+                if should_stop:
+                    return
             # print(max_coeff)
             # print(arr)
             # print(max_tours)
@@ -460,6 +474,6 @@ def main(parallel=True):
 
 
 if __name__ == '__main__':
-   main(False)
+   main()
    #import cProfile
    #cProfile.run('main(False)')
