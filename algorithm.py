@@ -105,7 +105,7 @@ def solve(problem: Problem):
     ma = hv.compute(ref_point)
     sols = []
     while True:
-        if iterations % 2_000 == 0:
+        if iterations % 2_000 == 0 or (problem.number_results == 20 and iterations % 400 == 0):
             #dont run for anything but a280
             if problem.number_results == 100 and iterations % 10_000 == 0:
                 for i in range(1, len(max_hypervol)):
